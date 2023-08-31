@@ -1,0 +1,116 @@
+name: eval_lidar_occ
+model: bts_lidar
+seed: 0
+output_path: out/default
+batch_size: 1
+num_workers: 1
+eval_use_iters: true
+vis_use_iters: true
+validate_every: 2000
+visualize_every: 500
+log_every_iters: 1
+log_tb_train_every_iters: -1
+log_tb_val_every_iters: -1
+log_tb_vis_every_iters: 1
+checkpoint_every: 500
+resume_from: null
+loss_during_validation: false
+num_epochs: 150
+stop_iteration: null
+learning_rate: 0.0001
+warmup_steps: 10000
+decay_rate: 0.5
+decay_steps: 100000
+num_steps: 100000
+backend: null
+nproc_per_node: null
+with_amp: false
+data:
+  type: KITTI_360
+  data_path: data/KITTI-360
+  pose_path: data/KITTI-360/data_poses
+  split_path: datasets/kitti_360/splits/seg
+  image_size:
+  - 192
+  - 640
+  data_stereo: false
+  data_fc: 1
+  fisheye_rotation: -15
+  fisheye_offset: 10
+  is_preprocessed: false
+  data_3d_bboxes: false
+  data_segmentation: false
+  data_fisheye: false
+  project_scale: 2
+  output_scale: 1
+  voxel_size: 0.4
+  vox_origin:
+  - -25.6
+  - -3.2
+  - 0
+  scene_size:
+  - 51.2
+  - 6.4
+  - 51.2
+checkpoint: out/kitti_360/kitti_360_backend-None-1_20230825-1214461
+log_every: 10
+model_conf:
+  arch: BTSNet
+  use_code: true
+  code:
+    num_freqs: 6
+    freq_factor: 1.5
+    include_input: true
+  encoder:
+    type: volumetric
+    n_classes: 2
+    class_names:
+    - occupied
+    - empty
+    feature: 64
+    n_relations: 4
+    frustum_size: 4
+    dataset: kitti
+    project_scale: 2
+    full_scene_size:
+    - 128
+    - 16
+    - 128
+    vox_origin:
+    - -25.6
+    - -3.2
+    - 0
+    scene_size:
+    - 51.2
+    - 6.4
+    - 51.2
+    project_1_2: true
+    project_1_4: true
+    project_1_8: true
+    beta: 0.0
+  mlp_coarse:
+    type: resnet
+    n_blocks: 0
+    d_hidden: 32
+  mlp_fine:
+    type: empty
+    n_blocks: 1
+    d_hidden: 128
+  z_near: 3
+  z_far: 51.2
+  ray_batch_size: 256
+  code_mode: z
+  inv_z: true
+  learn_empty: false
+  n_frames_encoder: 1
+  n_frames_render: 1
+  sample_color: true
+renderer:
+  n_coarse: 64
+  n_fine: 0
+  n_fine_depth: 0
+  depth_std: 1.0
+  sched: []
+  white_bkgd: false
+  lindisp: true
+  hard_alpha_cap: true

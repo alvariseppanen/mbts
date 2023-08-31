@@ -1,0 +1,3 @@
+[2023-08-22 10:48:41,233][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-08-22 10:48:42,018][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: CUDA error: CUBLAS_STATUS_ALLOC_FAILED when calling `cublasCreate(handle)`
+[2023-08-22 10:48:42,050][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: CUDA error: CUBLAS_STATUS_ALLOC_FAILED when calling `cublasCreate(handle)`

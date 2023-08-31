@@ -1,0 +1,3 @@
+[2023-08-18 09:45:44,995][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-08-18 09:45:45,678][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: MonoScene.forward() missing 2 required positional arguments: 'projected_pixs' and 'fov_masks'
+[2023-08-18 09:45:45,721][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: MonoScene.forward() missing 2 required positional arguments: 'projected_pixs' and 'fov_masks'

@@ -1,0 +1,103 @@
+defaults:
+    - default
+    - data: kitti_360
+    - _self_
+
+name: "kitti_360"
+model: "bts"
+output_path: "out/kitti_360"
+
+num_epochs: 25
+batch_size: 16 # 16
+
+save_best:
+    metric: abs_rel # ie_acc # abs_rel
+    sign: -1 # 1 # -1
+
+data:
+    data_fc: 2
+    image_size: [192, 640]
+    color_aug: true
+    is_preprocessed: true
+    fisheye_rotation: [0, -15]
+    project_scale: 2
+    output_scale: 1 
+    voxel_size: 0.4 # 0.2
+    vox_origin: [-25.6, -3.2, 0] # [-9.6, 0, 0] # [-6.4, -1, 0] # [-25.6, -2, 0] 
+    scene_size: [51.2, 6.4, 51.2] # [19.2, 1.6, 25.6] # [12.8, 3.2, 25.6] # [51.2, 6.4, 51.2] 
+    data_segmentation: true
+
+model_conf:
+    arch: "BTSNet"
+    use_code: true
+    prediction_mode: default
+
+    code:
+        num_freqs: 6
+        freq_factor: 1.5
+        include_input: true
+
+    encoder:
+        type: "volumetric"
+        n_classes: 2
+        class_names: ["occupied", "empty"]
+        feature: 64 
+        n_relations: 4 
+        frustum_size: 4 
+        dataset: "kitti"
+        dataset_type: "kitti_360"
+        project_scale: 2
+        full_scene_size: [128, 16, 128] # [96, 8, 128] # [64, 16, 128] # [256, 32, 256]
+        vox_origin: [-25.6, -3.2, 0] # [-9.6, 0, 0] # [-6.4, -1, 0] # [-25.6, -2, 0] 
+        scene_size: [51.2, 6.4, 51.2] # [19.2, 1.6, 25.6] # [12.8, 3.2, 25.6] # [51.2, 6.4, 51.2] 
+        project_1_2: true # not implemented
+        project_1_4: true # not implemented
+        project_1_8: true # not implemented
+        beta: 0.0
+
+    mlp_coarse:
+        type : "resnet"
+        n_blocks : 0
+        d_hidden : 32 # 64
+
+    mlp_fine:
+        type : "empty"
+        n_blocks : 1
+        d_hidden : 128
+
+    z_near: 3
+    z_far: 51.2 # 80
+    inv_z: true
+
+    n_frames_encoder: 1
+    n_frames_render: 2
+    frame_sample_mode: kitti360-mono
+
+    sample_mode: patch
+    patch_size: 8
+    ray_batch_size: 4096
+
+    flip_augmentation: true
+
+    learn_empty: false
+    code_mode: z
+
+loss:
+    criterion: "l1+ssim"
+    invalid_policy: weight_guided
+    lambda_edge_aware_smoothness: 0.001
+
+scheduler:
+    type: step
+    step_size: 120000
+    gamma: 0.1
+
+renderer:
+    n_coarse : 64
+    n_fine : 0
+    n_fine_depth : 0
+    depth_std : 1.0
+    sched : []
+    white_bkgd : false
+    lindisp: true
+    hard_alpha_cap: true

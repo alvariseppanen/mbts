@@ -1,0 +1,3 @@
+[2023-08-23 17:14:57,385][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-08-23 17:15:00,277][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: 'abs_rel'
+[2023-08-23 17:15:00,348][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: 'abs_rel'

@@ -1,0 +1,86 @@
+defaults:
+    - default
+    - data: kitti_360
+    - _self_
+
+name: "eval_lidar_occ"
+model: "bts_lidar"
+checkpoint: "out/kitti_360/kitti_360_backend-None-1_20230825-121446"
+
+
+log_every: 10
+batch_size: 1
+num_workers: 1
+
+
+data:
+    image_size: [192, 640]
+    data_3d_bboxes: false
+    data_segmentation: false
+    data_fisheye: false
+    data_stereo: false
+    data_fc: 1
+    is_preprocessed: false
+    project_scale: 2 
+    output_scale: 1 
+    voxel_size: 0.4 # 0.2 
+    vox_origin: [-25.6, -3.2, 0] # [-9.6, 0, 0] # [-6.4, -1, 0] # [-25.6, -2, 0] 
+    scene_size: [51.2, 6.4, 51.2] # [19.2, 1.6, 25.6] # [12.8, 3.2, 25.6] # [51.2, 6.4, 51.2] 
+
+model_conf:
+    arch: "BTSNet"
+    use_code: true
+
+    code:
+        num_freqs: 6
+        freq_factor: 1.5
+        include_input: true
+
+    encoder:
+        type: "volumetric"
+        n_classes: 2
+        class_names: ["occupied", "empty"]
+        feature: 64 
+        n_relations: 4 
+        frustum_size: 4 
+        dataset: "kitti"
+        project_scale: 2
+        full_scene_size: [128, 16, 128] # [96, 8, 128] # [64, 16, 128] # [256, 32, 256]
+        vox_origin: [-25.6, -3.2, 0] # [-9.6, 0, 0] # [-6.4, -1, 0] # [-25.6, -2, 0] 
+        scene_size: [51.2, 6.4, 51.2] # [19.2, 1.6, 25.6] # [12.8, 3.2, 25.6] # [51.2, 6.4, 51.2] 
+        project_1_2: true # not implemented
+        project_1_4: true # not implemented
+        project_1_8: true # not implemented
+        beta: 0.0
+
+    mlp_coarse:
+        type : "resnet"
+        n_blocks : 0
+        d_hidden : 32 # 64
+
+    mlp_fine:
+        type : "empty"
+        n_blocks : 1
+        d_hidden : 128
+
+    z_near: 3
+    z_far: 51.2 # 80
+    ray_batch_size: 256
+    code_mode: z
+    inv_z: true
+    learn_empty: false
+
+    n_frames_encoder: 1
+    n_frames_render: 1
+
+    sample_color: true
+
+renderer:
+    n_coarse : 64
+    n_fine : 0
+    n_fine_depth : 0
+    depth_std : 1.0
+    sched : []
+    white_bkgd : false
+    lindisp: true
+    hard_alpha_cap: true
