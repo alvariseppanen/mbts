@@ -109,7 +109,7 @@ class BTSWrapper(nn.Module):
         if self.use_automasking:
             self.train_sampler.channels += 1
 
-        self.val_sampler = ImageRaySampler(self.z_near, self.z_far)
+        self.val_sampler = ImageRaySampler(self.z_near, self.z_far) 
 
         self.eval_nvs = eval_nvs
         if self.eval_nvs:
@@ -133,8 +133,8 @@ class BTSWrapper(nn.Module):
         projected_pix = data["projected_pix_{}".format(self.project_scale)] # n, h*w, 2    (only for single input image)
         fov_mask = data["fov_mask_{}".format(self.project_scale)]           # n, h*w       (only for single input image)
         
-        if self.training == False: segs = None
-        elif self.enc_type != "semantic": segs = None 
+        #if self.training == False: segs = None
+        if self.enc_type != "semantic": segs = None 
         else: segs = torch.stack(data["segs"], dim=1)
 
         '''label_id = 26
@@ -338,8 +338,8 @@ class BTSWrapper(nn.Module):
                 data.update(self.compute_depth_metrics(data))
             if self.eval_nvs: # False
                 data.update(self.compute_nvs_metrics(data))
-            if True:
-                data.update(self.compute_occ_metrics(data, sampler))
+            #if True:
+            #    data.update(self.compute_occ_metrics(data, sampler))
 
         if self.training:
             self._counter += 1
@@ -590,8 +590,8 @@ def get_dataflow(config, logger=None):
 
 
 def get_metrics(config, device):
-    #names = ["abs_rel", "sq_rel", "rmse", "rmse_log", "a1", "a2", "a3"]
-    names = ["o_acc", "o_rec", "o_prec", "ie_acc", "ie_rec", "ie_prec", "ie_r", "t_ie", "t_no_nop_nv", "abs_rel", "sq_rel", "rmse", "rmse_log", "a1", "a2", "a3"]
+    names = ["abs_rel", "sq_rel", "rmse", "rmse_log", "a1", "a2", "a3"]
+    #names = ["o_acc", "o_rec", "o_prec", "ie_acc", "ie_rec", "ie_prec", "ie_r", "t_ie", "t_no_nop_nv", "abs_rel", "sq_rel", "rmse", "rmse_log", "a1", "a2", "a3"]
     #names = ["o_acc", "o_rec", "o_prec", "ie_acc", "ie_rec", "ie_prec", "ie_r", "t_ie", "t_no_nop_nv"]
              
     if config.get("mode", "depth") == "nvs":

@@ -1,0 +1,15 @@
+[2023-09-01 11:19:08,348][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 11:19:12,046][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:00:03.601
+[2023-09-01 11:19:12,046][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:00:03.698
+[2023-09-01 11:28:28,097][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 11:28:31,790][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:00:03.551
+[2023-09-01 11:28:31,790][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:00:03.692
+[2023-09-01 11:37:14,536][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 11:37:18,616][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:00:03.982
+[2023-09-01 11:37:18,616][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:00:04.080
+[2023-09-01 11:46:42,871][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 11:50:38,232][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:03:55.257
+[2023-09-01 11:50:38,233][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:03:55.362
+[2023-09-01 11:50:38,270][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 11:50:40,579][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: CUDA out of memory. Tried to allocate 2.34 GiB (GPU 0; 23.69 GiB total capacity; 16.58 GiB already allocated; 2.31 GiB free; 19.05 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+[2023-09-01 11:50:40,616][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: CUDA out of memory. Tried to allocate 2.34 GiB (GPU 0; 23.69 GiB total capacity; 16.58 GiB already allocated; 2.31 GiB free; 19.05 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

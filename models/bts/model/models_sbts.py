@@ -56,7 +56,7 @@ class SBTSNet(torch.nn.Module):
 
         #if self.encoder_type != "volumetric":
         self.mlp_coarse = make_mlp(conf["mlp_coarse"], d_in, d_out=d_out)
-        self.mlp_fine = make_mlp(conf["mlp_fine"], d_in, d_out=d_out, allow_empty=True)
+        #self.mlp_fine = make_mlp(conf["mlp_fine"], d_in, d_out=d_out, allow_empty=True)
         self.mlp_class = make_mlp(conf["mlp_class"], d_in, d_out=self.n_classes, allow_empty=True)
 
         if self.learn_empty:
@@ -357,6 +357,7 @@ class SBTSNet(torch.nn.Module):
         
         sampled_features = F.grid_sample(feature_map.view(n * nv, c, h, w), xy.view(n * nv, 1, -1, 2), mode="bilinear", padding_mode="border", align_corners=False).view(n, nv, c, n_pts).permute(0, 1, 3, 2)
         semantic_sampled_features = F.grid_sample(semantic_feature_map.view(n * nv, c, h, w), xy.view(n * nv, 1, -1, 2), mode="bilinear", padding_mode="border", align_corners=False).view(n, nv, c, n_pts).permute(0, 1, 3, 2)
+        #semantic_sampled_features = F.grid_sample(feature_map.view(n * nv, c, h, w), xy.view(n * nv, 1, -1, 2), mode="bilinear", padding_mode="border", align_corners=False).view(n, nv, c, n_pts).permute(0, 1, 3, 2)
 
         if self.learn_empty:
             sampled_features[invalid.expand(-1, -1, -1, c)] = empty_feature_expanded[invalid.expand(-1, -1, -1, c)]
@@ -481,20 +482,21 @@ class SBTSNet(torch.nn.Module):
             
             #st = time.time()
             # Run main NeRF network
-            if coarse or self.mlp_fine is None:
-                mlp_output = self.mlp_coarse(
-                    mlp_input,
-                    combine_inner_dims=(n_pts,),
-                    combine_index=combine_index,
-                    dim_size=dim_size,
-                )
-            else:
+
+            #if coarse or self.mlp_fine is None:  
+            mlp_output = self.mlp_coarse(
+                mlp_input,
+                combine_inner_dims=(n_pts,),
+                combine_index=combine_index,
+                dim_size=dim_size,
+            )
+            '''else:
                 mlp_output = self.mlp_fine(
                     mlp_input,
                     combine_inner_dims=(n_pts,),
                     combine_index=combine_index,
                     dim_size=dim_size,
-                )
+                )'''
             semantic_mlp_output = self.mlp_class(
                                   semantic_mlp_input,
                                   combine_inner_dims=(n_pts,),

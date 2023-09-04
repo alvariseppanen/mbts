@@ -1,0 +1,3 @@
+[2023-09-01 10:17:20,282][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 10:17:22,633][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: shape '[1, 8, 192, 640, 4]' is invalid for input of size 2949120
+[2023-09-01 10:17:22,675][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: shape '[1, 8, 192, 640, 4]' is invalid for input of size 2949120

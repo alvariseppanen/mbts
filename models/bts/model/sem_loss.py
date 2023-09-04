@@ -60,7 +60,7 @@ class SemReconstructionLoss:
         self.lambda_fine = config.get("lambda_fine", 1)
 
         self.lambda_sem = config.get("lambda_sem", 1)
-        self.sem_crit = torch.nn.CrossEntropyLoss()
+        self.sem_crit = torch.nn.CrossEntropyLoss(ignore_index=255)
 
         self.use_automasking = use_automasking
 
@@ -161,11 +161,9 @@ class SemReconstructionLoss:
                 rgb_loss = self.rgb_coarse_crit(rgb_coarse, rgb_gt)
                 rgb_loss = rgb_loss.amin(-2)
 
-                # Semantic loss
-                ignore_class =  (sem_gt == 255) | (sem_gt == -1) 
-                sem_gt[ignore_class] = 19 # ignore class
+                # Semantic loss 
                 sem_loss = self.sem_crit(sem_coarse.permute(0,4,1,2,3), sem_gt.long())
-                loss_coarse_all += sem_loss.item() * self.lambda_sem
+                loss += sem_loss.item() * self.lambda_sem
 
                 if self.use_automasking:
                     rgb_loss = torch.min(rgb_loss, thresh_gt)

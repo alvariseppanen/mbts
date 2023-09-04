@@ -94,7 +94,7 @@ def make_datasets(config):
             return_stereo=config.get("data_stereo", True),
             return_fisheye=config.get("data_fisheye", True),
             return_3d_bboxes=config.get("data_3d_bboxes", False),
-            return_segmentation=False,
+            return_segmentation=config.get("data_segmentation", False),
             keyframe_offset=config.get("keyframe_offset", 0),
             fisheye_rotation=config.get("fisheye_rotation", 0),
             fisheye_offset=config.get("fisheye_offset", 1),

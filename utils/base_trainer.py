@@ -22,6 +22,9 @@ from utils.metrics import MeanMetric
 
 
 def base_training(local_rank, config, get_dataflow, initialize, get_metrics, visualize):
+    #print("val freq: ", config["validate_every"])
+    #print("###############################################################################################################################")
+
     rank = idist.get_rank()
     manual_seed(config["seed"] + rank)
     device = idist.device()
@@ -97,7 +100,7 @@ def base_training(local_rank, config, get_dataflow, initialize, get_metrics, vis
 
     eval_use_iters = config.get("eval_use_iters", False)
     vis_use_iters = config.get("vis_use_iters", False)
-
+    
     if not eval_use_iters:
         trainer.add_event_handler(Events.EPOCH_COMPLETED(every=config["validate_every"]) | Events.COMPLETED, run_validation)
     else:

@@ -7,6 +7,10 @@ name: "kitti_360"
 model: "bts"
 output_path: "out/kitti_360"
 
+validate_every: 2000
+visualize_every: 500
+checkpoint_every: 500
+
 #resume_from: "out/kitti_360/kitti_360_backend-None-1_20230824-093207/training_checkpoint_6000.pt"
 
 num_epochs: 25
@@ -56,7 +60,8 @@ model_conf:
         type : "class_resnet"
         n_blocks : 0
         d_hidden : 64
-        n_classes: 20
+        n_classes: 10
+        class_names: ["unlabeled", "road", "sidewalk", "vegetation", "terrain", "sky", "car", "person", "truck", "wall"]
 
     z_near: 3
     z_far: 80
@@ -79,6 +84,7 @@ loss:
     criterion: "l1+ssim"
     invalid_policy: weight_guided
     lambda_edge_aware_smoothness: 0.001
+    lambda_sem: 1
 
 scheduler:
     type: step

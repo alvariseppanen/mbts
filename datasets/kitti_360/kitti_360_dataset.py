@@ -18,7 +18,7 @@ from datasets.kitti_360.annotation import KITTI360Bbox3D
 from utils.augmentation import get_color_aug_fn
 
 from datasets.kitti_360.helpers import vox2pix
-from datasets.kitti_360.labels import labels, id2label
+from datasets.kitti_360.labels import labels, id2label, labels_short
 
 
 class FisheyeToPinholeSampler:
@@ -139,18 +139,19 @@ class Kitti360Dataset(Dataset):
 
         if self.split_path is not None:
             self._datapoints = self._load_split(self.split_path, self._img_ids)
-        elif self.return_segmentation:
-            self._datapoints = self._semantics_split(self._sequences, self.data_path, self._img_ids)
+        #elif self.return_segmentation:
+        #    self._datapoints = self._semantics_split(self._sequences, self.data_path, self._img_ids)
         else:
             self._datapoints = self._full_split(self._sequences, self._img_ids, self.check_file_integrity)
 
         if self.return_3d_bboxes:
             self._3d_bboxes = self._load_3d_bboxes(Path(data_path) / "data_3d_bboxes" / "train_full", self._sequences)
 
-        if self.return_segmentation:
+        
+        #if self.return_segmentation:
             # Segmentations are only provided for the left camera
-            self._datapoints = [dp for dp in self._datapoints if not dp[2]]
-
+        #    self._datapoints = [dp for dp in self._datapoints if not dp[2]]
+        
         self._skip = 0
         self.length = len(self._datapoints)
 
@@ -176,9 +177,9 @@ class Kitti360Dataset(Dataset):
             self.vox2pixlut["projected_pix_{}".format(scale_3d)] = projected_pix
             self.vox2pixlut["fov_mask_{}".format(scale_3d)] = fov_mask
 
-        self.lut = np.array([labels[0].trainId])
-        for l in range(1, len(labels)):
-            self.lut = np.concatenate((self.lut, np.array([labels[l].trainId])))
+        self.lut = np.array([labels_short[0].trainId])
+        for l in range(1, len(labels_short)):
+            self.lut = np.concatenate((self.lut, np.array([labels_short[l].trainId])))
     
 
     def check_file_integrity(self, seq, id):

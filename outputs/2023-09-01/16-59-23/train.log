@@ -1,0 +1,23 @@
+[2023-09-01 16:59:32,981][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 16:59:36,722][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:00:03.625
+[2023-09-01 16:59:36,722][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:00:03.741
+[2023-09-01 16:59:38,472][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 17:03:27,545][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:03:48.972
+[2023-09-01 17:03:27,545][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:03:49.073
+[2023-09-01 17:03:27,590][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 17:03:31,112][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:00:03.422
+[2023-09-01 17:03:31,112][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:00:03.522
+[2023-09-01 17:03:32,783][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 17:03:36,224][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:00:03.344
+[2023-09-01 17:03:36,225][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:00:03.442
+[2023-09-01 17:03:37,802][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 17:07:29,143][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:03:51.237
+[2023-09-01 17:07:29,143][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:03:51.341
+[2023-09-01 17:07:29,187][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 17:07:32,618][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:00:03.327
+[2023-09-01 17:07:32,618][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:00:03.431
+[2023-09-01 17:07:34,286][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 17:07:37,778][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:00:03.391
+[2023-09-01 17:07:37,778][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:00:03.492
+[2023-09-01 17:07:39,363][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-01 17:07:48,394][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: 

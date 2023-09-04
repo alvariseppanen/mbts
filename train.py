@@ -2,12 +2,11 @@ import ignite.distributed as idist
 import hydra
 from omegaconf import DictConfig, OmegaConf
 import os
-
 import torch
-
 from models.bts.trainer import training as bts
 from models.bts.trainer_overfit import training as bts_overfit
 
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:256"
 
 @hydra.main(version_base=None, config_path="configs")
 def main(config: DictConfig):
