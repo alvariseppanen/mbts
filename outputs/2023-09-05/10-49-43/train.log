@@ -1,0 +1,6 @@
+[2023-09-05 10:49:54,104][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-05 10:49:57,757][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:00:03.553
+[2023-09-05 10:49:57,757][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:00:03.653
+[2023-09-05 10:50:00,279][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-05 10:50:02,642][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: CUDA out of memory. Tried to allocate 2.34 GiB (GPU 0; 23.69 GiB total capacity; 16.60 GiB already allocated; 2.35 GiB free; 19.02 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+[2023-09-05 10:50:02,675][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: CUDA out of memory. Tried to allocate 2.34 GiB (GPU 0; 23.69 GiB total capacity; 16.60 GiB already allocated; 2.35 GiB free; 19.02 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

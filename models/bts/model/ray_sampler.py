@@ -238,7 +238,10 @@ class ImageRaySampler(RaySampler):
 
     def sample(self, images, poses, projs):
         n, v, _, _ = poses.shape
-        _, _, c, _, _ = images.shape
+        if images is not None:
+            _, _, c, _, _ = images.shape
+        else:
+            c = self.channels
 
         if self.height is None:
             self.height, self.width = images.shape[-2:]

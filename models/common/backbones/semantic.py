@@ -133,6 +133,31 @@ class UpSampleBN(nn.Module):
         f = torch.cat([up_x, concat_with], dim=1)
         return self._net(f)
     
+class UpSampleBN3(nn.Module):
+    def __init__(self, skip_input, output_features):
+        super(UpSampleBN3, self).__init__()
+        self._net = nn.Sequential(
+            nn.Conv2d(skip_input, output_features, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(output_features),
+            nn.LeakyReLU(),
+            nn.Conv2d(
+                output_features, output_features, kernel_size=3, stride=1, padding=1
+            ),
+            nn.BatchNorm2d(output_features),
+            nn.LeakyReLU(),
+        )
+
+    def forward(self, x, concat_with, concat_with2):
+        up_x = F.interpolate(
+            x,
+            size=(concat_with.shape[2], concat_with.shape[3]),
+            mode="bilinear",
+            align_corners=True,
+        )
+        #print(up_x.shape, concat_with.shape)
+        f = torch.cat([up_x, concat_with, concat_with2], dim=1)
+        return self._net(f)
+    
 class UpSampleBNwoS(nn.Module):
     def __init__(self, input_features, output_features):
         super(UpSampleBNwoS, self).__init__()
@@ -156,7 +181,6 @@ class UpSampleBNwoS(nn.Module):
         )
         
         return self._net(x)
-
 
 class DecoderBN(nn.Module):
     def __init__(
@@ -240,6 +264,106 @@ class DecoderBN(nn.Module):
         x_1_4 = self.up4(x_1_8, x_block3)
         x_1_2 = self.up2(x_1_4, x_block4)
         x_1_1 = self.up1(x_1_2)
+        
+        return {
+            "1_1": x_1_1,
+            "1_2": x_1_2,
+            "1_4": x_1_4,
+            "1_8": x_1_8,
+        }
+
+class DecoderBN2(nn.Module):
+    def __init__(
+        self, num_features, bottleneck_features, out_feature, use_decoder=True
+    ):
+        super(DecoderBN2, self).__init__()
+        features = int(num_features)
+        self.use_decoder = use_decoder
+
+        self.conv2 = nn.Conv2d(
+            bottleneck_features, features, kernel_size=1, stride=1, padding=1
+        )
+
+        self.out_feature_1_1 = out_feature
+        self.out_feature_1_2 = out_feature
+        self.out_feature_1_4 = out_feature
+        self.out_feature_1_8 = out_feature
+        self.out_feature_1_16 = out_feature
+        self.feature_1_16 = features // 2
+        self.feature_1_8 = features // 4
+        self.feature_1_4 = features // 8
+        self.feature_1_2 = features // 32
+        self.feature_1_1 = features // 32
+        self.depth_feature = 64
+
+        if self.use_decoder:
+            self.resize_output_1_1 = nn.Conv2d(
+                self.feature_1_1, self.out_feature_1_1, kernel_size=1
+            )
+            self.resize_output_1_2 = nn.Conv2d(
+                self.feature_1_2, self.out_feature_1_2, kernel_size=1
+            )
+            self.resize_output_1_4 = nn.Conv2d(
+                self.feature_1_4, self.out_feature_1_4, kernel_size=1
+            )
+            self.resize_output_1_8 = nn.Conv2d(
+                self.feature_1_8, self.out_feature_1_8, kernel_size=1
+            )
+            self.resize_output_1_16 = nn.Conv2d(
+                self.feature_1_16, self.out_feature_1_16, kernel_size=1
+            )
+
+            self.up0 = UpSampleBNwoS(
+                input_features=features, output_features=self.feature_1_8
+            )
+
+            self.up16 = UpSampleBN(
+                skip_input=features + self.feature_1_16, output_features=self.feature_1_16
+            )
+            self.up8 = UpSampleBN3(
+                skip_input=self.feature_1_16 + self.feature_1_8 + self.depth_feature, output_features=self.feature_1_8
+            )
+            self.up4 = UpSampleBN3(
+                skip_input=self.feature_1_8 + self.feature_1_4 + self.depth_feature, output_features=self.feature_1_4
+            )
+            self.up2 = UpSampleBN3(
+                skip_input=self.feature_1_4 + self.feature_1_2 + self.depth_feature, output_features=self.feature_1_2*2
+            )
+            self.up1 = UpSampleBN(
+                skip_input=self.feature_1_2*2 + self.depth_feature, output_features=self.feature_1_1
+            )
+            
+        else:
+            self.resize_output_1_1 = nn.Conv2d(3, out_feature, kernel_size=1)
+            self.resize_output_1_2 = nn.Conv2d(32, out_feature * 2, kernel_size=1)
+            self.resize_output_1_4 = nn.Conv2d(48, out_feature * 4, kernel_size=1)
+
+    def forward(self, features, depth_features):
+        x_block0, x_block1, x_block2, x_block3, x_block4 = (
+            features[4],
+            features[3],
+            features[2],
+            features[1],
+            features[0],
+        )
+        #print(x_block0.shape, x_block1.shape, x_block2.shape, x_block3.shape, x_block4.shape)
+        d_block0, d_block1, d_block2, d_block3 = (
+            depth_features[("disp", 3)],
+            depth_features[("disp", 2)],
+            depth_features[("disp", 1)],
+            depth_features[("disp", 0)],
+        )
+        #print(d_block0.shape, d_block1.shape, d_block2.shape, d_block3.shape)
+
+        bs = x_block0.shape[0]
+
+        x_d0 = self.conv2(x_block0)
+
+        x_1_16 = self.up16(x_d0, x_block1)
+        x_1_8 = self.up8(x_1_16, x_block2, d_block0)
+        x_1_4 = self.up4(x_1_8, x_block3, d_block1)
+        x_1_2 = self.up2(x_1_4, x_block4, d_block2)
+        x_1_1 = self.up1(x_1_2, d_block3)
         
         return {
             "1_1": x_1_1,
@@ -424,6 +548,11 @@ class SemanticSegmentor(nn.Module):
                                      bottleneck_features=2048,
                                      num_features=2048,
         )
+        self.sem_decoder2 = DecoderBN2(out_feature=d_out,
+                                     use_decoder=True,
+                                     bottleneck_features=2048,
+                                     num_features=2048,
+        )
 
     def forward(self, x):
         """
@@ -436,11 +565,11 @@ class SemanticSegmentor(nn.Module):
             x = torch.cat([x * .5 + .5], dim=1)
             image_features = self.encoder(x)
             outputs = self.decoder(image_features)
-            sem_outputs = self.sem_decoder(image_features)
-
+            #sem_outputs = self.sem_decoder(image_features)
+            sem_outputs = self.sem_decoder2(image_features, outputs)
             x = [outputs[("disp", i)] for i in self.scales]
             x.append(sem_outputs["1_1"])
-        #print("2D", time.time() - st) # ~ 10 ms
+        #print("Encoder", time.time() - st) # ~ 10 ms
         
         return x
 

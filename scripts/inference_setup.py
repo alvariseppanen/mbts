@@ -45,7 +45,7 @@ n_rows, n_cols = 3, 3
 
 OUT_RES = dotdict(
     X_RANGE = (-9, 9),
-    Y_RANGE = (.0, .75),
+    Y_RANGE = (.0, 2.0),
     Z_RANGE = (21, 3),
     P_RES_ZX = (256, 256),
     P_RES_Y = 64
@@ -116,9 +116,13 @@ def setup_kitti360(out_folder, split="test", split_name="seg"):
     #cp_path = Path(f"out/kitti_360/pretrained")
     #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230824-093207")
 
-    config_path = "vol_exp_kitti_360"
+    #config_path = "vol_exp_kitti_360"
     #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230821-171010")
-    cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230825-121446")
+    #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230825-121446")
+
+    config_path = "sem_exp_kitti_360"
+    #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230901-203831")
+    cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230904-175237")
     
     cp_name = cp_path.name
     cp_path = next(cp_path.glob("training*.pt"))
@@ -239,6 +243,74 @@ def render_profile(net, cam_incl_adjust):
 
     alphas_sum = torch.cumsum(alphas, dim=0)
     profile = (alphas_sum <= 8).float().sum(dim=0) / alphas.shape[0]
+    
+    return profile
+
+def semantic_render_profile(net, cam_incl_adjust):
+    q_pts = get_pts(OUT_RES.X_RANGE, OUT_RES.Y_RANGE, OUT_RES.Z_RANGE, OUT_RES.P_RES_ZX[1], OUT_RES.P_RES_Y, OUT_RES.P_RES_ZX[0], cam_incl_adjust=cam_incl_adjust)
+    q_pts = q_pts.to(device).view(1, -1, 3)
+
+    batch_size = 50000
+    if q_pts.shape[1] > batch_size:
+        sigmas = []
+        invalid = []
+        sems = []
+        l = q_pts.shape[1]
+        for i in range(math.ceil(l / batch_size)):
+            f = i * batch_size
+            t = min((i + 1) * batch_size, l)
+            q_pts_ = q_pts[:, f:t, :]
+            _, invalid_, sigmas_, sems_ = net.forward(q_pts_)
+            sigmas.append(sigmas_)
+            invalid.append(invalid_)
+            sems.append(sems_)
+        sigmas = torch.cat(sigmas, dim=1)
+        invalid = torch.cat(invalid, dim=1)
+        sems = torch.cat(sems, dim=1)
+    else:
+        _, invalid, sigmas, sems = net.forward(q_pts)
+
+    #print(sems.shape)
+    pred_class = sems.argmax(dim=2, keepdim=True)
+
+    sigmas[torch.any(invalid, dim=-1)] = 1
+    pred_class[torch.any(invalid, dim=-1)] = -1
+
+    occupied_mask = sigmas > 0.5
+
+    pred_class = pred_class.reshape(OUT_RES.P_RES_Y, *OUT_RES.P_RES_ZX)
+    occupied_mask = occupied_mask.reshape(OUT_RES.P_RES_Y, *OUT_RES.P_RES_ZX)
+    pred_class = pred_class.float()
+    pred_class[~occupied_mask] = float('nan')
+
+    bev = pred_class.nanmean(dim=0).floor().int()
+
+    '''bev = torch.zeros(*OUT_RES.P_RES_ZX)
+    for i in range(occupied_mask.shape[1]):
+        for j in range(occupied_mask.shape[2]):
+            for h in range(occupied_mask.shape[0]):
+                bev[i,j] = -1
+                if pred_class[h, i, j] > -1:
+                    bev[i,j] = pred_class[h, i, j]
+                    break'''
+
+    color_lut = torch.tensor([[128, 64,128],
+                              [244, 35,232],
+                              [ 70, 70, 70],
+                              [153,153,153],
+                              [107,142, 35],
+                              [ 70,130,180],
+                              [220, 20, 60],
+                              [  0,  0,142],
+                              [  0,  0, 70],
+                              [  0,  0,230],
+                              [  0,  0,  0]]).cuda()
+
+    r_profile = color_lut[:, 0][bev.long()][:,:, None]
+    g_profile = color_lut[:, 1][bev.long()][:,:, None]
+    b_profile = color_lut[:, 2][bev.long()][:,:, None]
+
+    profile = torch.cat((r_profile, g_profile, b_profile), dim=2)
     
     return profile
 

@@ -11,10 +11,10 @@ validate_every: 2000
 visualize_every: 500
 checkpoint_every: 500
 
-#resume_from: "out/kitti_360/kitti_360_backend-None-1_20230824-093207/training_checkpoint_6000.pt"
+#resume_from: "out/kitti_360/out/kitti_360/kitti_360_backend-None-1_20230904-175237/training_checkpoint_227000.pt"
 
 num_epochs: 25
-batch_size: 8 #16
+batch_size: 2 #16
 
 save_best:
     metric: abs_rel # ie_acc # abs_rel
@@ -42,7 +42,7 @@ model_conf:
         type: "semantic"
         freeze: false
         pretrained: true
-        resnet_layers: 50
+        resnet_layers: 50 # 50
         num_ch_dec: [32,32,64,128,256]
         d_out: 64
 

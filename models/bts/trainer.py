@@ -137,12 +137,14 @@ class BTSWrapper(nn.Module):
         if self.enc_type != "semantic": segs = None 
         else: segs = torch.stack(data["segs"], dim=1)
 
-        '''label_id = 26
-        f_seg = segs[0,7,...].clone()
+        '''label_id = 7
+        img_id = 7
+        f_seg = segs[0,img_id,...].clone()
+        f_seg[f_seg == 255] = 0
         f_seg[f_seg == label_id] = 255
-        cv2.imshow('fish seg', f_seg.cpu().numpy())
-        cv2.imshow('fish img', images[0,7,...].permute(1,2,0).cpu().numpy())
-        cv2.waitKey(10000)'''
+        cv2.imshow('seg', f_seg.cpu().numpy().astype(np.uint8))
+        cv2.imshow('img', images[0,img_id,...].permute(1,2,0).cpu().numpy())
+        cv2.waitKey(2000)'''
 
         n, v, c, h, w = images.shape
         device = images.device

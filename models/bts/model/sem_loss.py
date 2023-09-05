@@ -163,7 +163,7 @@ class SemReconstructionLoss:
 
                 # Semantic loss 
                 sem_loss = self.sem_crit(sem_coarse.permute(0,4,1,2,3), sem_gt.long())
-                loss += sem_loss.item() * self.lambda_sem
+                loss += sem_loss * self.lambda_sem
 
                 if self.use_automasking:
                     rgb_loss = torch.min(rgb_loss, thresh_gt)
