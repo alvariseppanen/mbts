@@ -1,0 +1,3 @@
+[2023-09-05 11:50:48,052][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-05 11:50:51,463][ignite.engine.engine.Engine][INFO] - Epoch[1] Complete. Time taken: 00:00:03.267
+[2023-09-05 11:50:51,463][ignite.engine.engine.Engine][INFO] - Engine run complete. Time taken: 00:00:03.412

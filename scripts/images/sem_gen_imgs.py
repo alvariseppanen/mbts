@@ -14,12 +14,14 @@ from models.common.render import semNeRFRenderer
 from utils.array_operations import map_fn, unsqueezer
 from utils.plotting import color_tensor
 
+import open3d as o3d
 
 def main():
 
     s_img = True
     s_depth = True
     s_profile = True
+    s_voxel_grid = True
     dry_run = True
 
     indices = [0, 1]
@@ -100,14 +102,16 @@ def main():
             img = images[0, 0].permute(1, 2, 0).cpu() * .5 + .5
             _, depth = render_poses(renderer, ray_sampler, poses[:, :1], projs[:, :1])
 
-            s_profile = True
             if s_profile:
                 profile = semantic_render_profile(net, cam_incl_adjust).cpu()
-                #profile = (profile / 255 + .5).cpu()
-                #print(profile)
-                #profile + profile.cpu()
             else:
                 profile = None
+
+            s_voxel_grid = False
+            if s_voxel_grid:
+                voxel_grid = semantic_render_voxel_grid(net, cam_incl_adjust).cpu()
+            else:
+                voxel_grid = None
 
             depth = ((1 / depth - 1 / config["model_conf"]["z_far"]) / (1 / config["model_conf"]["z_near"] - 1 / config["model_conf"]["z_far"])).clamp(0, 1)
 
@@ -119,6 +123,12 @@ def main():
                 save_plot(color_tensor(depth, "magma", norm=True).numpy(), str(out_path / f"{idx:010d}_depth.png"), dry_run=dry_run)
             if s_profile:
                 save_plot(profile.numpy(), str(out_path / f"{idx:010d}_profile.png"), dry_run=dry_run)
+            if s_voxel_grid:
+                pcd = o3d.geometry.PointCloud()
+                pcd.points = o3d.utility.Vector3dVector(voxel_grid[:,:3].numpy())
+                pcd.colors = o3d.utility.Vector3dVector(voxel_grid[:,3:6].numpy())
+                voxel_grid = o3d.geometry.VoxelGrid.create_from_point_cloud(pcd, voxel_size=1.00)
+                o3d.visualization.draw_geometries([voxel_grid])
 
 
 if __name__ == '__main__':

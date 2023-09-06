@@ -45,8 +45,8 @@ n_rows, n_cols = 3, 3
 
 OUT_RES = dotdict(
     X_RANGE = (-9, 9),
-    Y_RANGE = (.0, 2.0),
-    Z_RANGE = (21, 3),
+    Y_RANGE = (-0.5, 1.5),
+    Z_RANGE = (31, 3),
     P_RES_ZX = (256, 256),
     P_RES_Y = 64
 )
@@ -122,7 +122,9 @@ def setup_kitti360(out_folder, split="test", split_name="seg"):
 
     config_path = "sem_exp_kitti_360"
     #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230901-203831")
-    cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230904-175237")
+    cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230905-115406")
+    #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230904-175237")
+    cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230906-112110")
     
     cp_name = cp_path.name
     cp_path = next(cp_path.glob("training*.pt"))
@@ -280,19 +282,12 @@ def semantic_render_profile(net, cam_incl_adjust):
 
     pred_class = pred_class.reshape(OUT_RES.P_RES_Y, *OUT_RES.P_RES_ZX)
     occupied_mask = occupied_mask.reshape(OUT_RES.P_RES_Y, *OUT_RES.P_RES_ZX)
-    pred_class = pred_class.float()
-    pred_class[~occupied_mask] = float('nan')
-
-    bev = pred_class.nanmean(dim=0).floor().int()
-
-    '''bev = torch.zeros(*OUT_RES.P_RES_ZX)
-    for i in range(occupied_mask.shape[1]):
-        for j in range(occupied_mask.shape[2]):
-            for h in range(occupied_mask.shape[0]):
-                bev[i,j] = -1
-                if pred_class[h, i, j] > -1:
-                    bev[i,j] = pred_class[h, i, j]
-                    break'''
+    
+    ranking = torch.arange(0,OUT_RES.P_RES_Y,1)
+    ranking_grid = torch.tile(ranking[:, None, None] , dims=(1, *OUT_RES.P_RES_ZX))
+    ranking_grid[~occupied_mask] = 1000
+    _, first_occupied = torch.min(ranking_grid, dim=0, keepdim=True)
+    bev = torch.take_along_dim(pred_class, first_occupied.cuda(), dim=0).squeeze()
 
     color_lut = torch.tensor([[128, 64,128],
                               [244, 35,232],
@@ -314,5 +309,70 @@ def semantic_render_profile(net, cam_incl_adjust):
     
     return profile
 
+def semantic_render_voxel_grid(net, cam_incl_adjust):
+    q_pts = get_pts(OUT_RES.X_RANGE, OUT_RES.Y_RANGE, OUT_RES.Z_RANGE, OUT_RES.P_RES_ZX[1], OUT_RES.P_RES_Y, OUT_RES.P_RES_ZX[0], cam_incl_adjust=cam_incl_adjust)
+    q_pts = q_pts.to(device).view(1, -1, 3)
+
+    batch_size = 50000
+    if q_pts.shape[1] > batch_size:
+        sigmas = []
+        invalid = []
+        sems = []
+        l = q_pts.shape[1]
+        for i in range(math.ceil(l / batch_size)):
+            f = i * batch_size
+            t = min((i + 1) * batch_size, l)
+            q_pts_ = q_pts[:, f:t, :]
+            _, invalid_, sigmas_, sems_ = net.forward(q_pts_)
+            sigmas.append(sigmas_)
+            invalid.append(invalid_)
+            sems.append(sems_)
+        sigmas = torch.cat(sigmas, dim=1)
+        invalid = torch.cat(invalid, dim=1)
+        sems = torch.cat(sems, dim=1)
+    else:
+        _, invalid, sigmas, sems = net.forward(q_pts)
+    
+    pred_class = sems.argmax(dim=2, keepdim=True)
+
+    sigmas[torch.any(invalid, dim=-1)] = 1
+    pred_class[torch.any(invalid, dim=-1)] = -1
+
+    occupied_mask = sigmas > 0.5
+
+    pred_class = pred_class.reshape(OUT_RES.P_RES_Y, *OUT_RES.P_RES_ZX)
+    occupied_mask = occupied_mask.reshape(OUT_RES.P_RES_Y, *OUT_RES.P_RES_ZX)
+    occupied_mask[pred_class == -1] = False
+    
+    grid = torch.from_numpy(np.indices((OUT_RES.P_RES_Y, *OUT_RES.P_RES_ZX))).cuda()
+    x_i = grid[1][...,None] # x indices
+    y_i = grid[0][...,None] # y indices
+    z_i = grid[2][...,None] # z indices
+    voxel_coordinates = torch.cat((x_i, y_i, z_i), dim=3)
+
+    pred_class = pred_class[occupied_mask] # N, 1
+    voxel_coordinates = voxel_coordinates[occupied_mask, :] # N, 3
+
+    color_lut = torch.tensor([[128, 64,128],
+                              [244, 35,232],
+                              [ 70, 70, 70],
+                              [153,153,153],
+                              [107,142, 35],
+                              [ 70,130,180],
+                              [220, 20, 60],
+                              [  0,  0,142],
+                              [  0,  0, 70],
+                              [  0,  0,230],
+                              [  0,  0,  0]]).cuda()
+    
+    color_lut = color_lut / 255
+
+    pred_color_r = color_lut[:, 0][pred_class][:, None]
+    pred_color_g = color_lut[:, 1][pred_class][:, None]
+    pred_color_b = color_lut[:, 2][pred_class][:, None]
+
+    voxel_grid = torch.cat((voxel_coordinates, pred_color_r, pred_color_g, pred_color_b), dim=1) # N, 6 (x, y, z, r, g, b)
+    
+    return voxel_grid
 
 print("+++ Inference Setup Complete +++")

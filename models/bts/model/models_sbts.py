@@ -507,7 +507,7 @@ class SBTSNet(torch.nn.Module):
             #print("f sample: ", time.time() - st)
 
             # (n, pts, c) -> (n, n_pts, c)
-            mlp_output = mlp_output.reshape(n, n_pts, self._d_out)
+            mlp_output = mlp_output.reshape(n, n_pts, self._d_out).detach()
             semantic_mlp_output = semantic_mlp_output.reshape(n, n_pts, self.n_classes)
 
             if self.sample_color:

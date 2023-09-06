@@ -11,10 +11,11 @@ validate_every: 2000
 visualize_every: 500
 checkpoint_every: 500
 
-#resume_from: "out/kitti_360/out/kitti_360/kitti_360_backend-None-1_20230904-175237/training_checkpoint_227000.pt"
+#resume_from: "out/kitti_360/kitti_360_backend-None-1_20230904-175237/training_checkpoint_284500.pt" # 23 epoch, only density, no semantics trained 
+resume_from: "out/kitti_360/kitti_360_backend-None-1_20230906-112110/training_checkpoint_303000.pt" # above but trained semantics for 1 epoch
 
-num_epochs: 25
-batch_size: 2 #16
+num_epochs: 35 # 25
+batch_size: 8 #16
 
 save_best:
     metric: abs_rel # ie_acc # abs_rel
