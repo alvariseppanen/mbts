@@ -145,7 +145,7 @@ class SBTSNet(torch.nn.Module):
 
     def encode(self, images, Ks, poses_c2w, ids_encoder=None, ids_render=None, images_alt=None, combine_ids=None):
         poses_w2c = torch.inverse(poses_c2w)
-
+        
         if ids_encoder is None:
             images_encoder = images
             Ks_encoder = Ks
@@ -507,7 +507,7 @@ class SBTSNet(torch.nn.Module):
             #print("f sample: ", time.time() - st)
 
             # (n, pts, c) -> (n, n_pts, c)
-            mlp_output = mlp_output.reshape(n, n_pts, self._d_out).detach()
+            mlp_output = mlp_output.reshape(n, n_pts, self._d_out)#.detach()
             semantic_mlp_output = semantic_mlp_output.reshape(n, n_pts, self.n_classes)
 
             if self.sample_color:

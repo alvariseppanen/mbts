@@ -360,6 +360,16 @@ class DecoderBN2(nn.Module):
             depth_features[("disp", 0)],
         )
         #print(d_block0.shape, d_block1.shape, d_block2.shape, d_block3.shape)
+        x_block0 = x_block0.detach()
+        x_block1 = x_block1.detach()
+        x_block2 = x_block2.detach()
+        x_block3 = x_block3.detach()
+        x_block4 = x_block4.detach()
+
+        d_block0 = d_block0.detach()
+        d_block1 = d_block1.detach()
+        d_block2 = d_block2.detach()
+        d_block3 = d_block3.detach()
 
         bs = x_block0.shape[0]
 
@@ -549,16 +559,16 @@ class SemanticSegmentor(nn.Module):
                 p.requires_grad = False
 
         # semantic decoder
-        self.sem_decoder = DecoderBN(out_feature=d_out,
-                                     use_decoder=True,
-                                     bottleneck_features=2048,
-                                     num_features=2048,
-        )
-        '''self.sem_decoder2 = DecoderBN2(out_feature=d_out,
+        '''self.sem_decoder = DecoderBN(out_feature=d_out,
                                      use_decoder=True,
                                      bottleneck_features=2048,
                                      num_features=2048,
         )'''
+        self.sem_decoder2 = DecoderBN2(out_feature=d_out,
+                                     use_decoder=True,
+                                     bottleneck_features=2048,
+                                     num_features=2048,
+        )
 
     def forward(self, x):
         """
@@ -571,8 +581,8 @@ class SemanticSegmentor(nn.Module):
             x = torch.cat([x * .5 + .5], dim=1)
             image_features = self.encoder(x)
             outputs = self.decoder(image_features)
-            sem_outputs = self.sem_decoder(image_features)
-            #sem_outputs = self.sem_decoder2(image_features, outputs)
+            #sem_outputs = self.sem_decoder(image_features)
+            sem_outputs = self.sem_decoder2(image_features, outputs)
             x = [outputs[("disp", i)] for i in self.scales]
             x.append(sem_outputs["1_1"])
         #print("Encoder", time.time() - st) # ~ 10 ms

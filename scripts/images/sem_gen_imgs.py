@@ -24,7 +24,7 @@ def main():
     s_voxel_grid = True
     dry_run = True
 
-    indices = [0, 1]
+    indices = [0, 1, 2, 3]
 
     task = "KITTI-360"
     assert task in ["KITTI-360", "KITTI-Raw", "RealEstate10K"]

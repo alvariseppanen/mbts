@@ -124,7 +124,7 @@ def setup_kitti360(out_folder, split="test", split_name="seg"):
     #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230901-203831")
     cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230905-115406")
     #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230904-175237")
-    cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230906-112110")
+    cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230908-122535")
     
     cp_name = cp_path.name
     cp_path = next(cp_path.glob("training*.pt"))
@@ -282,9 +282,9 @@ def semantic_render_profile(net, cam_incl_adjust):
 
     pred_class = pred_class.reshape(OUT_RES.P_RES_Y, *OUT_RES.P_RES_ZX)
     occupied_mask = occupied_mask.reshape(OUT_RES.P_RES_Y, *OUT_RES.P_RES_ZX)
-    
-    ranking = torch.arange(0,OUT_RES.P_RES_Y,1)
-    ranking_grid = torch.tile(ranking[:, None, None] , dims=(1, *OUT_RES.P_RES_ZX))
+
+    grid = torch.from_numpy(np.indices((OUT_RES.P_RES_Y, *OUT_RES.P_RES_ZX))).cuda()
+    ranking_grid = grid[0] 
     ranking_grid[~occupied_mask] = 1000
     _, first_occupied = torch.min(ranking_grid, dim=0, keepdim=True)
     bev = torch.take_along_dim(pred_class, first_occupied.cuda(), dim=0).squeeze()

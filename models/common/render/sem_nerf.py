@@ -301,7 +301,7 @@ class semNeRFRenderer(torch.nn.Module):
 
             rgb_final = torch.sum(weights.unsqueeze(-1) * rgbs, -2)  # (B, 3)
             depth_final = torch.sum(weights * z_samp, -1)  # (B)
-            sem_final = torch.sum(weights.unsqueeze(-1) * sems, -2)  # (B, n_classes)
+            sem_final = torch.sum(weights.unsqueeze(-1).detach() * sems, -2)  # (B, n_classes)
             # pick the semantic prediction at the ray termination depth
             #sem_final = sems[depth_final.int()] # todo: normalize pred depth to match sems indices 
             

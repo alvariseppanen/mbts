@@ -12,9 +12,9 @@ visualize_every: 500
 checkpoint_every: 500
 
 #resume_from: "out/kitti_360/kitti_360_backend-None-1_20230904-175237/training_checkpoint_284500.pt" # 23 epoch, only density, no semantics trained 
-resume_from: "out/kitti_360/kitti_360_backend-None-1_20230906-112110/training_checkpoint_303000.pt" # above but trained semantics for 1 epoch
+#resume_from: "out/kitti_360/kitti_360_backend-None-1_20230908-122535/training_checkpoint_682500.pt" # above but trained semantics for 23 epochs
 
-num_epochs: 35 # 25
+num_epochs: 70 # 25
 batch_size: 8 #16
 
 save_best:
