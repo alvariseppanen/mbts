@@ -1,0 +1,3 @@
+[2023-09-13 12:29:17,038][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-13 12:29:19,824][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: 'o_acc'
+[2023-09-13 12:29:19,880][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: 'o_acc'

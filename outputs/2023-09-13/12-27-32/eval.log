@@ -1,0 +1,3 @@
+[2023-09-13 12:27:39,479][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-13 12:27:42,371][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: reshape(): argument 'shape' must be tuple of SymInts, but found element of type tuple at pos 2
+[2023-09-13 12:27:42,441][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: reshape(): argument 'shape' must be tuple of SymInts, but found element of type tuple at pos 2

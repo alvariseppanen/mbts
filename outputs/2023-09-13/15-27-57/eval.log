@@ -1,0 +1,29 @@
+[2023-09-13 15:28:18,504][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-13 15:28:18,662][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: Caught KeyError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 763, in __getitem__
+    bev = [self.load_bev_segmentations(sequence, img_ids[0])]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 657, in load_bev_segmentations
+    cat_out, iscrowd_out, ids_out, sem_out = self._prepare_inputs(bev, self.metadata[seq + ";" + f"{img_id:010d}" + ";" + "cat"], self.metadata[seq + ";" + f"{img_id:010d}" + ";" + "iscrowd"], front=False)
+KeyError: '2013_05_28_drive_0000_sync;0000000386;cat'
+
+[2023-09-13 15:28:18,663][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: Caught KeyError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 763, in __getitem__
+    bev = [self.load_bev_segmentations(sequence, img_ids[0])]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 657, in load_bev_segmentations
+    cat_out, iscrowd_out, ids_out, sem_out = self._prepare_inputs(bev, self.metadata[seq + ";" + f"{img_id:010d}" + ";" + "cat"], self.metadata[seq + ";" + f"{img_id:010d}" + ";" + "iscrowd"], front=False)
+KeyError: '2013_05_28_drive_0000_sync;0000000386;cat'
+

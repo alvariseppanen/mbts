@@ -7,6 +7,8 @@ name: "kitti_360"
 model: "bts"
 output_path: "out/kitti_360"
 
+#backend: 'nccl'
+
 validate_every: 2000
 visualize_every: 500
 checkpoint_every: 500
@@ -15,7 +17,7 @@ checkpoint_every: 500
 #resume_from: "out/kitti_360/kitti_360_backend-None-1_20230908-122535/training_checkpoint_682500.pt" # above but trained semantics for 23 epochs
 
 num_epochs: 70 # 25
-batch_size: 8 #16
+batch_size: 2 #16
 
 save_best:
     metric: abs_rel # ie_acc # abs_rel

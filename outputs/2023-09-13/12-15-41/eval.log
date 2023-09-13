@@ -1,0 +1,3 @@
+[2023-09-13 12:15:49,058][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-13 12:15:51,876][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: not enough values to unpack (expected 3, got 2)
+[2023-09-13 12:15:51,936][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: not enough values to unpack (expected 3, got 2)

@@ -622,6 +622,7 @@ def initialize(config: dict, logger=None):
     )
 
     model = idist.auto_model(model)
+    #model = idist.auto_model(model, find_unused_parameters=True)
 
     optimizer = optim.Adam(model.parameters(), lr=config["learning_rate"])
     optimizer = idist.auto_optim(optimizer)
