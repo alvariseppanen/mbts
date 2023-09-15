@@ -19,6 +19,9 @@ from utils.base_evaluator import base_evaluation
 from utils.metrics import MeanMetric
 from utils.projection_operations import distance_to_z
 
+import cv2
+from PIL import Image
+
 import time
 
 IDX = 0
@@ -267,6 +270,16 @@ class BTSWrapper(nn.Module):
 
         print(gt_bev.shape)
         print(gt_bev.min(), gt_bev.max())
+
+        '''label_id = 6
+        img_id = 0
+        f_seg = gt_bev[0,img_id,...].clone()
+        f_seg[f_seg == 255] = 0
+        f_seg[f_seg == label_id] = 255
+        #cv2.imshow('seg', f_seg.cpu().numpy().astype(np.uint8))
+        #cv2.waitKey(2000)
+        img2 = Image.fromarray(np.ones((3,200,200)), 'RGB')
+        img2.show()'''
 
         seq, id, is_right = self.dataset._datapoints[index]
         seq_len = self.dataset._img_ids[seq].shape[0]

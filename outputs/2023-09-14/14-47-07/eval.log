@@ -1,0 +1,5 @@
+[2023-09-14 14:47:30,711][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-14 14:47:30,993][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: OpenCV(4.8.0) /io/opencv/modules/highgui/src/window.cpp:1272: error: (-2:Unspecified error) The function is not implemented. Rebuild the library with Windows, GTK+ 2.x or Cocoa support. If you are on Ubuntu or Debian, install libgtk2.0-dev and pkg-config, then re-run cmake or configure script in function 'cvShowImage'
+
+[2023-09-14 14:47:31,130][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: OpenCV(4.8.0) /io/opencv/modules/highgui/src/window.cpp:1272: error: (-2:Unspecified error) The function is not implemented. Rebuild the library with Windows, GTK+ 2.x or Cocoa support. If you are on Ubuntu or Debian, install libgtk2.0-dev and pkg-config, then re-run cmake or configure script in function 'cvShowImage'
+

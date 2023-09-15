@@ -1,0 +1,29 @@
+[2023-09-14 13:36:18,272][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-14 13:36:18,435][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: Caught TypeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 801, in __getitem__
+    bev = [self.load_bev_segmentations(sequence, img_ids[0])]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 696, in load_bev_segmentations
+    cat_out, iscrowd_out, ids_out, sem_out = self._prepare_inputs(self, msk=bev, cat=bev_cat, iscrowd=bev_iscrowd, front=False)
+TypeError: Kitti360Dataset._prepare_inputs() got multiple values for argument 'msk'
+
+[2023-09-14 13:36:18,435][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: Caught TypeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 801, in __getitem__
+    bev = [self.load_bev_segmentations(sequence, img_ids[0])]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 696, in load_bev_segmentations
+    cat_out, iscrowd_out, ids_out, sem_out = self._prepare_inputs(self, msk=bev, cat=bev_cat, iscrowd=bev_iscrowd, front=False)
+TypeError: Kitti360Dataset._prepare_inputs() got multiple values for argument 'msk'
+

@@ -1,0 +1,29 @@
+[2023-09-14 14:05:57,842][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-14 14:05:58,005][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: Caught IndexError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 844, in __getitem__
+    bev_seg = [self.load_bev_segmentations(sequence, img_ids[0])]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 724, in load_bev_segmentations
+    sem_msk_i = cat_i[msk_i]
+IndexError: too many indices for tensor of dimension 1
+
+[2023-09-14 14:05:58,006][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: Caught IndexError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 844, in __getitem__
+    bev_seg = [self.load_bev_segmentations(sequence, img_ids[0])]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 724, in load_bev_segmentations
+    sem_msk_i = cat_i[msk_i]
+IndexError: too many indices for tensor of dimension 1
+

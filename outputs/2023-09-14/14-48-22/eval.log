@@ -1,0 +1,3 @@
+[2023-09-14 14:48:46,587][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-14 14:48:46,813][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: module 'cv2' has no attribute 'cvShowImage'
+[2023-09-14 14:48:46,909][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: module 'cv2' has no attribute 'cvShowImage'

@@ -145,6 +145,12 @@ python scripts/images/gen_img_custom.py --img media/example/0000.png --model KIT
 We provide training configurations for our different models. 
 Generally, all trainings are run on a single Nvidia A40 GPU with 48GB memory.
 
+**Semantic KITTI-360**
+
+```bash
+python train.py -cn sem_exp_kitti_360
+```
+
 **KITTI-360**
 
 ```bash
@@ -168,6 +174,9 @@ python train.py -cn exp_re10k
 We further provide configurations to reproduce the evaluation results from the paper for occupancy and depth estimation.
 
 ```bash
+# TODO: KITTI-360 semantic birds eye view
+python eval.py -cn eval_bev_sem
+
 # KITTI-360 Lidar Occupancy
 python eval.py -cn eval_lidar_occ
 

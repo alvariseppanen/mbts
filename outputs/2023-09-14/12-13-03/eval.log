@@ -1,0 +1,27 @@
+[2023-09-14 12:13:27,438][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-14 12:13:27,612][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: Caught TypeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 782, in __getitem__
+    if self.return_bev_sem:
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 672, in load_bev_segmentations
+TypeError: list indices must be integers or slices, not str
+
+[2023-09-14 12:13:27,612][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: Caught TypeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 782, in __getitem__
+    if self.return_bev_sem:
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 672, in load_bev_segmentations
+TypeError: list indices must be integers or slices, not str
+

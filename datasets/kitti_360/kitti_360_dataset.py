@@ -184,8 +184,29 @@ class Kitti360Dataset(Dataset):
         for l in range(1, len(labels_short)):
             self.lut = np.concatenate((self.lut, np.array([labels_short[l].trainId])))
 
-        #self.prepare_inputs = self._prepare_inputs()
         self.metadata = self._load_metadata(self.data_path)
+        self.metadata_cat = {}
+        self.metadata_iscrowd = {}
+        for img_desc in self.metadata["images"]:
+            self.metadata_cat[img_desc["id"]] = img_desc["cat"]
+            self.metadata_iscrowd[img_desc["id"]] = img_desc["iscrowd"]
+
+        #print(self.metadata["images"][0]["id"])
+        #print(self.metadata["images"][0]["cat"])
+        #print(self.metadata["images"][0]["iscrowd"])
+        #self._bev_images = [img_desc for img_desc in self.metadata["images"] if img_desc["id"] in lst]
+        #self._bev_images = [img_desc for img_desc in self.metadata["images"]]
+
+        '''for img_desc in self.metadata["images"]:
+            print(img_desc["id"])
+        
+            print(self._bev_images[10]["cat"])
+            print(self._bev_images[10]["iscrowd"])
+            
+            print(self._bev_images[5]["cat"])
+            print(self._bev_images[5]["iscrowd"])
+            print(" ")'''
+
     
 
     def check_file_integrity(self, seq, id):
@@ -482,56 +503,6 @@ class Kitti360Dataset(Dataset):
             bev_metadata = umsgpack.unpack(fid, encoding="utf-8")
         return bev_metadata
 
-
-    @staticmethod
-    def _prepare_inputs(self, msk, cat, iscrowd, front=False):
-        if front:
-            num_stuff = self.fv_num_stuff
-        else:
-            num_stuff = self.bev_num_stuff
-
-        cat_out, iscrowd_out, bbx_out, ids_out, sem_out, sem_wo_sky_out, po_out, po_vis_out = [], [], [], [], [], [], [], []
-        for msk_i, cat_i, iscrowd_i in zip(msk, cat, iscrowd):
-            msk_i = msk_i.squeeze(0)
-            thing = (cat_i >= num_stuff) & (cat_i != 255)
-            valid = thing & ~(iscrowd_i > 0)
-
-            if valid.any().item():
-                cat_out.append(cat_i[valid])
-                ids_out.append(torch.nonzero(valid))
-            else:
-                cat_out.append(None)
-                ids_out.append(None)
-
-            if iscrowd_i.any().item():
-                iscrowd_i = (iscrowd_i > 0) & thing
-                iscrowd_out.append(iscrowd_i[msk_i].type(torch.uint8))
-            else:
-                iscrowd_out.append(None)
-
-            sem_msk_i = cat_i[msk_i]
-            sem_out.append(sem_msk_i)
-
-            # Get the FV image in terms of the BEV labels. This basically eliminates sky in the FV image
-            if front:
-                sem_wo_sky_veg_i = copy.deepcopy(sem_msk_i)
-                sem_wo_sky_veg_i[sem_wo_sky_veg_i == self.fv_sky_index] = 255
-                sem_wo_sky_veg_i[sem_wo_sky_veg_i == self.fv_veg_index] = 255
-                for lbl in torch.unique(sem_wo_sky_veg_i):
-                    decr_ctr = 0
-                    if (lbl > self.fv_sky_index) and (lbl != 255):
-                        decr_ctr += 1
-                    if (lbl > self.fv_veg_index) and (lbl != 255):
-                        decr_ctr += 1
-                    sem_wo_sky_veg_i[sem_wo_sky_veg_i == lbl] = lbl - decr_ctr
-                sem_wo_sky_out.append(sem_wo_sky_veg_i)
-
-        if front:
-            return cat_out, iscrowd_out, ids_out, sem_out, sem_wo_sky_out
-        else:
-            return cat_out, iscrowd_out, ids_out, sem_out
-
-
     def get_img_id_from_id(self, sequence, id):
         return self._img_ids[sequence][id]
 
@@ -652,14 +623,57 @@ class Kitti360Dataset(Dataset):
     
     def load_bev_segmentations(self, seq, img_id):
 
-        bev = cv2.imread(os.path.join(self.data_path, "bev_semantics", "bev_ortho", seq + ";" + f"{img_id:010d}.png"), cv2.IMREAD_UNCHANGED)
-        #print(self.metadata["meta"]['num_stuff'])
-        cat_out, iscrowd_out, ids_out, sem_out = self._prepare_inputs(self, msk=bev, cat=self.metadata["meta"]["categories"], iscrowd=self.metadata["meta"]["palette"], front=False)
+        bev = cv2.imread(os.path.join(self.data_path, "bev_semantics", "bev_ortho", seq + ";" + f"{img_id:010d}.png"), cv2.IMREAD_UNCHANGED).astype(np.uint8)
+        msk = bev[None,None,:,:]
+        cat = np.asarray(self.metadata_cat[seq + ";" + f"{img_id:010d}"])[None,:]
+        iscrowd = np.asarray(self.metadata_iscrowd[seq + ";" + f"{img_id:010d}"])[None,:]
 
-        print(cat_out.shape)
+        front = False
+        if front:
+            num_stuff = self.fv_num_stuff
+        else:
+            #num_stuff = self.bev_num_stuff
+            num_stuff = self.metadata["meta"]['num_stuff'] #self.n_classes
+
+        cat_out, iscrowd_out, bbx_out, ids_out, sem_out, sem_wo_sky_out, po_out, po_vis_out = [], [], [], [], [], [], [], []
+        for msk_i, cat_i, iscrowd_i in zip(msk, cat, iscrowd):
+            msk_i = msk_i.squeeze()
+            thing = (cat_i >= num_stuff) & (cat_i != 255)
+            valid = thing & ~(iscrowd_i > 0)
+
+            if valid.any().item():
+                cat_out.append(cat_i[valid])
+                ids_out.append(np.nonzero(valid))
+            else:
+                cat_out.append(None)
+                ids_out.append(None)
+
+            if iscrowd_i.any().item():
+                iscrowd_i = (iscrowd_i > 0) & thing
+                iscrowd_out.append(iscrowd_i[msk_i].astype(np.uint8))
+            else:
+                iscrowd_out.append(None)
+
+            sem_msk_i = cat_i[msk_i]
+            sem_out.append(sem_msk_i)
+
+            # Get the FV image in terms of the BEV labels. This basically eliminates sky in the FV image
+            if front:
+                sem_wo_sky_veg_i = copy.deepcopy(sem_msk_i)
+                sem_wo_sky_veg_i[sem_wo_sky_veg_i == self.fv_sky_index] = 255
+                sem_wo_sky_veg_i[sem_wo_sky_veg_i == self.fv_veg_index] = 255
+                for lbl in torch.unique(sem_wo_sky_veg_i):
+                    decr_ctr = 0
+                    if (lbl > self.fv_sky_index) and (lbl != 255):
+                        decr_ctr += 1
+                    if (lbl > self.fv_veg_index) and (lbl != 255):
+                        decr_ctr += 1
+                    sem_wo_sky_veg_i[sem_wo_sky_veg_i == lbl] = lbl - decr_ctr
+                sem_wo_sky_out.append(sem_wo_sky_veg_i)
+
         
 
-        return bev.astype(np.uint8)
+        return np.asarray(sem_out).squeeze()
 
     def load_depth(self, seq, img_id, is_right):
         points = np.fromfile(os.path.join(self.data_path, "data_3d_raw", seq, "velodyne_points", "data", f"{img_id:010d}.bin"), dtype=np.float32).reshape(-1, 4)
@@ -760,9 +774,9 @@ class Kitti360Dataset(Dataset):
         ids = np.array(ids + ids + ids_fish + ids_fish, dtype=np.int32)
 
         if self.return_bev_sem:
-            bev = [self.load_bev_segmentations(sequence, img_ids[0])]
+            bev_seg = [self.load_bev_segmentations(sequence, img_ids[0])]
         else:
-            bev = []
+            bev_seg = []
 
         if self.return_depth:
             depths = [self.load_depth(sequence, img_ids[0], is_right)]
@@ -783,7 +797,7 @@ class Kitti360Dataset(Dataset):
             "projs": projs,
             "poses": poses,
             "depths": depths,
-            "bev": bev,
+            "bev": bev_seg,
             "ts": ids,
             "3d_bboxes": bboxes_3d,
             "segs": segs,
