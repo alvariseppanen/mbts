@@ -790,6 +790,7 @@ class Kitti360Dataset(Dataset):
 
         _proc_time = np.array(time.time() - _start_time)
 
+        #print(sequence)
         # print(_loading_time, _processing_time, _proc_time)
 
         data = {

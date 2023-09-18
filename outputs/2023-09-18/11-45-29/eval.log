@@ -1,0 +1,3 @@
+[2023-09-18 11:45:50,191][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-18 11:45:53,704][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: index out of range in self
+[2023-09-18 11:45:53,786][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: index out of range in self

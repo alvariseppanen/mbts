@@ -1,0 +1,3 @@
+[2023-09-18 13:32:34,784][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-18 13:32:37,713][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: local variable 'sigmas' referenced before assignment
+[2023-09-18 13:32:37,791][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: local variable 'sigmas' referenced before assignment

@@ -1,0 +1,7 @@
+[2023-09-18 12:39:00,962][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-18 12:39:04,933][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call,so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+[2023-09-18 12:39:05,017][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call,so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.

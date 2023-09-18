@@ -61,123 +61,20 @@ def get_pts(x_range, y_range, z_range, ppm, ppm_y, y_res=None):
 
     return xyz, (x_res, y_res, z_res)
 
+def get_pts2(x_range, y_range, z_range, x_res, y_res, z_res, cam_incl_adjust=None):
+    x = torch.linspace(x_range[0], x_range[1], x_res).view(1, 1, x_res).expand(y_res, z_res, -1)
+    z = torch.linspace(z_range[0], z_range[1], z_res).view(1, z_res, 1).expand(y_res, -1, x_res)
+    y = torch.linspace(y_range[0], y_range[1], y_res).view(y_res, 1, 1).expand(-1, z_res, x_res)
+    xyz = torch.stack((x, y, z), dim=-1)
 
-# This function takes all points between min_y and max_y and projects them into the x-z plane.
-# To avoid cases where there are no points at the top end, we consider also points that are beyond the maximum z distance.
-# The points are then converted to polar coordinates and sorted by angle.
+    # The KITTI 360 cameras have a 5 degrees negative inclination. We need to account for that.
+    if cam_incl_adjust is not None:
+        xyz = xyz.view(-1, 3)
+        xyz_h = torch.cat((xyz, torch.ones_like(xyz[:, :1])), dim=-1)
+        xyz_h = (cam_incl_adjust.squeeze() @ xyz_h.mT).mT
+        xyz = xyz_h[:, :3].view(y_res, z_res, x_res, 3)
 
-def get_lidar_slices(point_clouds, velo_poses, y_range, y_res, max_dist):
-    slices = []
-    ys = torch.linspace(y_range[0], y_range[1], y_res)
-    if y_res > 1:
-        slice_height = ys[1] - ys[0]
-    else:
-        slice_height = 0
-    n_bins = 360
-
-    for y in ys:
-        if y_res == 1:
-            min_y = y
-            max_y = y_range[-1]
-        else:
-            min_y = y - slice_height / 2
-            max_y = y + slice_height / 2
-
-        slice = []
-
-        for pc, velo_pose in zip(point_clouds, velo_poses):
-            pc_world = (velo_pose @ pc.T).T
-
-            mask = ((pc_world[:, 1] >= min_y) & (pc_world[:, 1] <= max_y)) | (torch.norm(pc_world[:, :3], dim=-1) >= max_dist)
-
-            slice_points = pc[mask, :2]
-
-            angles = torch.atan2(slice_points[:, 1], slice_points[:, 0])
-            dists = torch.norm(slice_points, dim=-1)
-
-            slice_points_polar = torch.stack((angles, dists), dim=1)
-            # Sort by angles for fast lookup
-            slice_points_polar = slice_points_polar[torch.sort(angles)[1], :]
-
-            slice_points_polar_binned = torch.zeros_like(slice_points_polar[:n_bins, :])
-            bin_borders = torch.linspace(-math.pi, math.pi, n_bins+1, device=slice_points_polar.device)
-
-            dist = slice_points_polar[0, 1]
-
-            # To reduce noise, we bin the lidar points into bins of 1deg and then take the minimum distance per bin.
-            border_is = torch.searchsorted(slice_points_polar[:, 0], bin_borders)
-
-            for i in range(n_bins):
-                left_i, right_i = border_is[i], border_is[i+1]
-                angle = (bin_borders[i] + bin_borders[i+1]) * .5
-                if right_i > left_i:
-                    dist = torch.min(slice_points_polar[left_i:right_i, 1])
-                slice_points_polar_binned[i, 0] = angle
-                slice_points_polar_binned[i, 1] = dist
-
-            slice_points_polar = slice_points_polar_binned
-
-            # Append first element to last to have full 360deg coverage
-            slice_points_polar = torch.cat(( torch.tensor([[slice_points_polar[-1, 0] - math.pi * 2, slice_points_polar[-1, 1]]], device=slice_points_polar.device), slice_points_polar, torch.tensor([[slice_points_polar[0, 0] + math.pi * 2, slice_points_polar[0, 1]]], device=slice_points_polar.device)), dim=0)
-
-            slice.append(slice_points_polar)
-
-        slices.append(slice)
-
-    return slices
-
-
-def check_occupancy(pts, slices, velo_poses, min_dist=3):
-    is_occupied = torch.ones_like(pts[:, 0])
-    is_visible = torch.zeros_like(pts[:, 0], dtype=torch.bool)
-
-    thresh = (len(slices[0]) - 2) / len(slices[0])
-
-    pts = torch.cat((pts, torch.ones_like(pts[:, :1])), dim=-1)
-
-    world_to_velos = torch.inverse(velo_poses)
-
-    step = pts.shape[0] // len(slices)
-
-    for i, slice in enumerate(slices):
-        for j, (lidar_polar, world_to_velo) in enumerate(zip(slice, world_to_velos)):
-            pts_velo = (world_to_velo @ pts[i*step: (i+1)*step, :].T).T
-
-            # Convert query points to polar coordinates in velo space
-            angles = torch.atan2(pts_velo[:, 1], pts_velo[:, 0])
-            dists = torch.norm(pts_velo, dim=-1)
-
-            indices = torch.searchsorted(lidar_polar[:, 0].contiguous(), angles)
-
-            left_angles = lidar_polar[indices-1, 0]
-            right_angles = lidar_polar[indices, 0]
-
-            left_dists = lidar_polar[indices-1, 1]
-            right_dists = lidar_polar[indices, 1]
-
-            interp = (angles - left_angles) / (right_angles - left_angles)
-            surface_dist = left_dists * (1 - interp) + right_dists * interp
-
-            is_occupied_velo = (dists > surface_dist) | (dists < min_dist)
-
-            is_occupied[i*step: (i+1)*step] += is_occupied_velo.float()
-
-            if j == 0:
-                is_visible[i*step: (i+1)*step] |= ~is_occupied_velo
-
-    is_occupied /= len(slices[0])
-
-    is_occupied = is_occupied > thresh
-
-    return is_occupied, is_visible
-
-
-def project_into_cam(pts, proj, pose):
-    pts = torch.cat((pts, torch.ones_like(pts[:, :1])), dim=-1)
-    cam_pts = (proj @ (torch.inverse(pose).squeeze()[:3, :] @ pts.T)).T
-    cam_pts[:, :2] /= cam_pts[:, 2:3]
-    dist = cam_pts[:, 2]
-    return cam_pts, dist
+    return xyz
 
 
 def plot(pts, xd, yd, zd):
@@ -194,21 +91,6 @@ def plot(pts, xd, yd, zd):
             axs[r][c].imshow(pts[y], interpolation="none")
         else:
             axs[c].imshow(pts[y], interpolation="none")
-    plt.show()
-
-
-def plot_sperical(polar_pts):
-    polar_pts = polar_pts.cpu()
-    angles = polar_pts[:, 0]
-    dists = polar_pts[:, 1]
-
-    max_dist = dists.mean() * 2
-    dists = dists.clamp(0, max_dist) / max_dist
-
-    x = -torch.sin(angles) * dists
-    y = torch.cos(angles) * dists
-
-    plt.plot(x, y)
     plt.show()
 
 
@@ -234,13 +116,13 @@ class BTSWrapper(nn.Module):
         self.query_batch_size = config.get("query_batch_size", 50000)
         self.occ_threshold = 0.5
 
-        self.x_range = (-9, 9) # (-4, 4)
+        self.x_range = (-28.57, 28.57) # (-26.19, 26.19) # (-28.57, 28.57)
         self.y_range = (0.5, -1.5) # (0, .75)
-        self.z_range = (21, 3) # (20, 4)
-        self.ppm = 16
-        self.ppm_y = 16
+        self.z_range = (52.38, 0) # (57.14, 0) # (52.38, 0)
+        self.ppm = 13.45
+        self.ppm_y = 10
 
-        self.y_res = 32
+        self.y_res = 16
 
         self.sampler = ImageRaySampler(self.z_near, self.z_far, channels=3)
 
@@ -252,9 +134,36 @@ class BTSWrapper(nn.Module):
         if self.enc_type == "volumetric":
             self.project_scale = config["encoder"]["project_scale"]
 
+        self.ignore_index = 255
+        self.num_classes = config["mlp_class"]["n_classes"]
+        self.num_classes = 8
+
     @staticmethod
     def get_loss_metric_names():
         return ["loss", "loss_l2", "loss_mask", "loss_temporal"]
+    
+    def _confusion_matrix(self, sem_pred, sem):
+        confmat = sem[0].new_zeros(self.num_classes * self.num_classes, dtype=torch.float)
+
+        for sem_pred_i, sem_i in zip(sem_pred, sem):
+            valid = sem_i != self.ignore_index
+            if valid.any():
+                sem_pred_i = sem_pred_i.numpy()
+                sem_i = sem_i.numpy()
+                valid = valid.numpy()
+
+                sem_pred_i = sem_pred_i[valid]
+                sem_i = sem_i[valid]
+
+                sem_pred_i = torch.from_numpy(sem_pred_i)
+                sem_i = torch.from_numpy(sem_i)
+                valid = torch.from_numpy(valid)
+
+                #print(confmat.new_ones(sem_i.numel()).shape[0], len(sem_i.view(-1) * self.num_classes + sem_pred_i.view(-1)))
+
+                confmat.index_add_(0, sem_i.view(-1) * self.num_classes + sem_pred_i.view(-1), confmat.new_ones(sem_i.numel()))
+
+        return confmat.view(self.num_classes, self.num_classes)
 
     def forward(self, data):
         data = dict(data)
@@ -266,10 +175,10 @@ class BTSWrapper(nn.Module):
         # added 
         projected_pix = data["projected_pix_{}".format(self.project_scale)] # n, h*w, 2    (only for single input image)
         fov_mask = data["fov_mask_{}".format(self.project_scale)]           # n, h*w       (only for single input image)
-        gt_bev = torch.stack(data["bev"], dim=1)                           # n, v, 4, 4 (-1, 1)
+        gt_bev = torch.stack(data["bev"], dim=1).squeeze()                           # n, v, 4, 4 (-1, 1)
 
-        print(gt_bev.shape)
-        print(gt_bev.min(), gt_bev.max())
+        #print(gt_bev.shape)
+        #print(set(gt_bev.cpu().numpy().reshape(-1)))
 
         '''label_id = 6
         img_id = 0
@@ -298,28 +207,18 @@ class BTSWrapper(nn.Module):
         self.sampler.height = h
         self.sampler.width = w
 
-        rays, _ = self.sampler.sample(None, poses[:, :1, :, :], projs[:, :1, :, :])
-
-        #st = time.time()
         ids_encoder = [0]
-        self.renderer.net.compute_grid_transforms(projs[:, ids_encoder], poses[:, ids_encoder])
         if self.enc_type == "volumetric":
             self.renderer.net.volume_encode(images, projected_pix, fov_mask, projs, poses, ids_encoder=ids_encoder, ids_render=ids_encoder, images_alt=images * .5 + .5)
         else:
             self.renderer.net.encode(images, projs, poses, ids_encoder=ids_encoder, ids_render=ids_encoder, images_alt=images * .5 + .5)
         self.renderer.net.set_scale(0)
-        render_dict = self.renderer(rays, want_weights=True, want_alphas=True)
-        #print("model inference time: ", time.time() - st)
-        if "fine" not in render_dict:
-            render_dict["fine"] = dict(render_dict["coarse"])
-        render_dict = self.sampler.reconstruct(render_dict)
-        pred_depth = distance_to_z(render_dict["coarse"]["depth"], projs[:1, :1])
 
-        # Get pts
-        q_pts, (xd, yd, zd) = get_pts(self.x_range, self.y_range, self.z_range, self.ppm, self.ppm_y, self.y_res)
-        q_pts = q_pts.to(images.device).view(-1, 3)
-
-        #print(xd,yd,zd)
+        x_res = int((abs(self.x_range[0]) + abs(self.x_range[1])) * self.ppm)
+        y_res = int((abs(self.y_range[0]) + abs(self.y_range[1])) * self.ppm_y)
+        z_res = int((abs(self.z_range[0]) + abs(self.z_range[1])) * self.ppm)
+        q_pts = get_pts2(self.x_range, self.y_range, self.z_range, x_res, y_res, z_res)
+        q_pts = q_pts.to(device).view(1, -1, 3)
 
         batch_size = 50000
         if q_pts.shape[1] > batch_size:
@@ -331,7 +230,7 @@ class BTSWrapper(nn.Module):
                 f = i * batch_size
                 t = min((i + 1) * batch_size, l)
                 q_pts_ = q_pts[:, f:t, :]
-                _, invalid_, sigmas_, sems_ = self.renderer.net.forward(q_pts_.unsqueeze(0))
+                _, invalid_, sigmas_, sems_ = self.renderer.net(q_pts_)
                 sigmas.append(sigmas_)
                 invalid.append(invalid_)
                 sems.append(sems_)
@@ -339,40 +238,119 @@ class BTSWrapper(nn.Module):
             invalid = torch.cat(invalid, dim=1)
             sems = torch.cat(sems, dim=1)
         else:
-            _, invalid, sigmas, sems = self.renderer.net.forward(q_pts.unsqueeze(0))
+            _, invalid, sigmas, sems = self.renderer.net(q_pts)
 
         #print(sems.shape)
         pred_class = sems.argmax(dim=2, keepdim=True)
 
         sigmas[torch.any(invalid, dim=-1)] = 1
         pred_class[torch.any(invalid, dim=-1)] = -1
+        
+        occupied_mask = sigmas > self.occ_threshold
 
-        occupied_mask = sigmas > 0.5
+        pred_class = pred_class.reshape(y_res, z_res, x_res)
+        occupied_mask = occupied_mask.reshape(y_res, z_res, x_res)
 
-        pred_class = pred_class.reshape(yd, xd, zd)
-        occupied_mask = occupied_mask.reshape(yd, xd, zd)
-
-        grid = torch.from_numpy(np.indices((yd, xd, zd))).cuda()
+        grid = torch.from_numpy(np.indices((y_res, z_res, x_res))).cuda()
         ranking_grid = grid[0] 
         ranking_grid[~occupied_mask] = 1000
         _, first_occupied = torch.min(ranking_grid, dim=0, keepdim=True)
         pred_bev = torch.take_along_dim(pred_class, first_occupied.cuda(), dim=0).squeeze()
 
+        pred_bev = torch.rot90(pred_bev, k=-1, dims=[0,1])
 
-        print(pred_bev.shape)
+        # remap predictions
+        new_pred_bev = torch.ones_like(pred_bev)*255
+        new_pred_bev[pred_bev == 0] = 0
+        new_pred_bev[pred_bev == 1] = 1
+        new_pred_bev[pred_bev == 2] = 2
+        new_pred_bev[pred_bev == 5] = 3
+        new_pred_bev[pred_bev == 6] = 4
+        new_pred_bev[pred_bev == 9] = 5
+        new_pred_bev[pred_bev == 7] = 6
+        new_pred_bev[pred_bev == 8] = 7
+        new_pred_bev[pred_bev == -1] = 255
 
-        data["o_acc"] = 0
-        data["o_rec"] = 0
-        data["o_prec"] = 0
-        data["ie_acc"] = 0
-        data["ie_rec"] = 0
-        data["ie_prec"] = 0
-        data["ie_r"] = 0
-        data["t_ie"] = 0
-        data["t_no_nop_nv"] = 0
+        gt_bev[new_pred_bev == 255] = 255
 
-        data["z_near"] = torch.tensor(self.z_near, device=images.device)
-        data["z_far"] = torch.tensor(self.z_far, device=images.device)
+        '''ttt = torch.ones((20,20))
+        ttt[0:10, :] = 0
+        print(ttt)'''
+
+        # crop area of interest
+        '''crop_from_side = 400
+        crop_from_top = 300
+        gt_bev[0:crop_from_top, :] = 255
+        gt_bev[gt_bev.shape[0]-crop_from_top:gt_bev.shape[0], :] = 255
+        gt_bev[0:crop_from_top, :] = 255
+        gt_bev[:, gt_bev.shape[1]-crop_from_side:gt_bev.shape[1]] = 255'''
+
+        #print(pred_bev.shape)
+        #print(set(pred_bev.cpu().numpy().reshape(-1)))
+        '''if torch.count_nonzero(gt_bev == 4) > 0:
+            v_pred_bev = new_pred_bev.clone()
+            v_gt_bev = gt_bev.clone()
+            v_pred_bev[v_pred_bev == 255] = -1
+            v_gt_bev[v_gt_bev == 255] = -1
+            color_lut = torch.tensor([[128, 64,128],
+                                [244, 35,232],
+                                [ 70, 70, 70],
+                                [153,153,153],
+                                [107,142, 35],
+                                [ 70,130,180],
+                                [220, 20, 60],
+                                [  0,  0,142],
+                                [  0,  0, 70],
+                                [  0,  0,230],
+                                [  0,  0,  0]]).cuda()
+            r_profile = color_lut[:, 0][v_pred_bev.long()][:,:, None]
+            g_profile = color_lut[:, 1][v_pred_bev.long()][:,:, None]
+            b_profile = color_lut[:, 2][v_pred_bev.long()][:,:, None]
+            pred_profile = torch.cat((r_profile, g_profile, b_profile), dim=2).squeeze().cpu().numpy()
+            r_profile = color_lut[:, 0][v_gt_bev.long()][:,:, None]
+            g_profile = color_lut[:, 1][v_gt_bev.long()][:,:, None]
+            b_profile = color_lut[:, 2][v_gt_bev.long()][:,:, None]
+            gt_profile = torch.cat((r_profile, g_profile, b_profile), dim=2).squeeze().cpu().numpy()
+            print(pred_profile.shape, gt_profile.shape)
+            plt.imshow(gt_profile)
+            plt.show()
+            plt.imshow(pred_profile)
+            plt.show()'''
+        #cv2.imwrite("/home/seppanen/test/" + f"{index:010d}_pred.png", cv2.cvtColor((pred_profile * 1).clip(max=255).astype(np.uint8), cv2.COLOR_RGB2BGR))
+        #cv2.imwrite("/home/seppanen/test/" + f"{index:010d}_gt.png", cv2.cvtColor((gt_profile * 1).clip(max=255).astype(np.uint8), cv2.COLOR_RGB2BGR))
+
+        #bev_ignore_classes = varargs['bev_ignore_classes']
+        bev_ignore_classes = []
+        bev_num_classes_ignore = self.num_classes - len(bev_ignore_classes)
+        bev_num_classes = self.num_classes
+
+        bev_semantic_conf_mat = self._confusion_matrix(new_pred_bev.squeeze().cpu(), gt_bev.squeeze().cpu())
+        bev_semantic_conf_mat = bev_semantic_conf_mat.to(device)
+        #if not varargs['debug']:
+        #    distributed.all_reduce(bev_semantic_conf_mat, distributed.ReduceOp.SUM)
+        bev_semantic_conf_mat = bev_semantic_conf_mat.cpu()[:bev_num_classes, :]
+        # Remove specific rows
+        bev_keep_matrix = torch.ones_like(bev_semantic_conf_mat, dtype=torch.bool)
+        bev_keep_matrix[bev_ignore_classes, :] = False
+        bev_keep_matrix[:, bev_ignore_classes] = False
+        bev_semantic_conf_mat = bev_semantic_conf_mat[bev_keep_matrix].view(bev_keep_matrix.shape[0] - len(bev_ignore_classes),
+                                                                    bev_keep_matrix.shape[1] - len(bev_ignore_classes))
+        bev_sem_intersection = bev_semantic_conf_mat.diag()
+        bev_sem_union = ((bev_semantic_conf_mat.sum(dim=1) + bev_semantic_conf_mat.sum(dim=0)[:bev_num_classes_ignore] - bev_semantic_conf_mat.diag()) + 1e-8)
+        bev_sem_miou = bev_sem_intersection / bev_sem_union
+        bev_sem_miou[bev_sem_miou < 0.00001] = float('nan')
+
+        data["road"] = bev_sem_miou[0].item()
+        data["sidewalk"] = bev_sem_miou[1].item()
+        data["building"] = bev_sem_miou[2].item()
+        data["terrain"] = bev_sem_miou[3].item()
+        data["person"] = bev_sem_miou[4].item()
+        data["2-wheeler"] = bev_sem_miou[5].item()
+        data["car"] = bev_sem_miou[6].item()
+        data["truck"] = bev_sem_miou[7].item()
+
+        #data["z_near"] = torch.tensor(self.z_near, device=images.device)
+        #data["z_far"] = torch.tensor(self.z_far, device=images.device)
 
         globals()["IDX"] += 1
 
@@ -391,7 +369,7 @@ def get_dataflow(config):
 
 
 def get_metrics(config, device):
-    names = ["o_acc", "o_prec", "o_rec", "ie_acc", "ie_prec", "ie_rec", "t_ie", "t_no_nop_nv"]
+    names = ["road", "sidewalk", "building", "terrain", "person", "2-wheeler", "car", "truck"]
     metrics = {name: MeanMetric((lambda n: lambda x: x["output"][n])(name), device) for name in names}
     return metrics
 

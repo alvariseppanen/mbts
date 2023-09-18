@@ -14,7 +14,7 @@ from models.common.render import semNeRFRenderer
 from utils.array_operations import map_fn, unsqueezer
 from utils.plotting import color_tensor
 
-import open3d as o3d
+#import open3d as o3d
 
 def main():
 

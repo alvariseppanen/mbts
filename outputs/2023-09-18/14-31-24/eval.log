@@ -1,0 +1,3 @@
+[2023-09-18 14:31:45,182][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-18 14:32:40,708][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: boolean index did not match indexed array along dimension 0; dimension is 768 but corresponding boolean dimension is 704
+[2023-09-18 14:32:40,802][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: boolean index did not match indexed array along dimension 0; dimension is 768 but corresponding boolean dimension is 704

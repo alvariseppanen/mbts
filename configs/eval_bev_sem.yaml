@@ -5,8 +5,8 @@ defaults:
 
 name: "eval_bev_sem"
 model: "bev_sem"
-checkpoint: "out/kitti_360/pretrained"
-#checkpoint: "out/kitti_360/kitti_360_backend-None-1_20230824-093207"
+#checkpoint: "out/kitti_360/pretrained"
+checkpoint: "out/kitti_360/kitti_360_backend-None-1_20230914-170158"
 
 
 log_every: 10
@@ -21,7 +21,7 @@ data:
     data_fisheye: false
     data_stereo: false
     data_fc: 1
-    is_preprocessed: false
+    is_preprocessed: true
     data_bev_sem: true
 
 model_conf:

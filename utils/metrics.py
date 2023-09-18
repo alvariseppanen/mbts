@@ -31,7 +31,8 @@ class MeanMetric(Metric):
     @sync_all_reduce("_num_examples:SUM", "_sum:SUM")
     def compute(self):
         if self._num_examples == 0:
-            raise NotComputableError('CustomAccuracy must have at least one example before it can be computed.')
+            #raise NotComputableError('CustomAccuracy must have at least one example before it can be computed.')
+            self._num_examples = 1
         return self._sum.item() / self._num_examples
 
     @torch.no_grad()

@@ -122,9 +122,10 @@ def setup_kitti360(out_folder, split="test", split_name="seg"):
 
     config_path = "sem_exp_kitti_360"
     #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230901-203831")
-    cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230905-115406")
+    #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230905-115406")
     #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230904-175237")
-    cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230908-122535")
+    #cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230908-122535")
+    cp_path = Path(f"out/kitti_360/kitti_360_backend-None-1_20230914-170158")
     
     cp_name = cp_path.name
     cp_path = next(cp_path.glob("training*.pt"))
@@ -250,6 +251,7 @@ def render_profile(net, cam_incl_adjust):
 
 def semantic_render_profile(net, cam_incl_adjust):
     q_pts = get_pts(OUT_RES.X_RANGE, OUT_RES.Y_RANGE, OUT_RES.Z_RANGE, OUT_RES.P_RES_ZX[1], OUT_RES.P_RES_Y, OUT_RES.P_RES_ZX[0], cam_incl_adjust=cam_incl_adjust)
+    #print(OUT_RES.X_RANGE, OUT_RES.Y_RANGE, OUT_RES.Z_RANGE, OUT_RES.P_RES_ZX[1], OUT_RES.P_RES_Y, OUT_RES.P_RES_ZX[0], cam_incl_adjust)
     q_pts = q_pts.to(device).view(1, -1, 3)
 
     batch_size = 50000
@@ -277,7 +279,7 @@ def semantic_render_profile(net, cam_incl_adjust):
 
     sigmas[torch.any(invalid, dim=-1)] = 1
     pred_class[torch.any(invalid, dim=-1)] = -1
-
+    
     occupied_mask = sigmas > 0.5
 
     pred_class = pred_class.reshape(OUT_RES.P_RES_Y, *OUT_RES.P_RES_ZX)
