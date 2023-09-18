@@ -538,5 +538,5 @@ class SBTSNet(torch.nn.Module):
             else:
                 rgb = torch.zeros((n, n_pts, nv * 3), device=sigma.device)
                 invalid = invalid_features.to(sigma.dtype)
-            
+            #print(pred_sem.shape)
         return rgb, invalid, sigma, pred_sem

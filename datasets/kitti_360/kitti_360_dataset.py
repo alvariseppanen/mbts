@@ -18,7 +18,7 @@ from datasets.kitti_360.annotation import KITTI360Bbox3D
 from utils.augmentation import get_color_aug_fn
 
 from datasets.kitti_360.helpers import vox2pix
-from datasets.kitti_360.labels import labels, id2label, labels_short
+from datasets.kitti_360.labels import labels, id2label, labels_short, labels_3
 import copy
 import umsgpack
 
@@ -180,9 +180,9 @@ class Kitti360Dataset(Dataset):
             self.vox2pixlut["projected_pix_{}".format(scale_3d)] = projected_pix
             self.vox2pixlut["fov_mask_{}".format(scale_3d)] = fov_mask
 
-        self.lut = np.array([labels_short[0].trainId])
-        for l in range(1, len(labels_short)):
-            self.lut = np.concatenate((self.lut, np.array([labels_short[l].trainId])))
+        self.lut = np.array([labels_3[0].trainId])
+        for l in range(1, len(labels_3)):
+            self.lut = np.concatenate((self.lut, np.array([labels_3[l].trainId])))
 
         self.metadata = self._load_metadata(self.data_path)
         self.metadata_cat = {}

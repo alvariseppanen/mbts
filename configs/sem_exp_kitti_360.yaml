@@ -17,7 +17,7 @@ checkpoint_every: 500
 #resume_from: "out/kitti_360/kitti_360_backend-None-1_20230908-122535/training_checkpoint_682500.pt" # above but trained semantics for 23 epochs
 
 num_epochs: 70 # 25
-batch_size: 2 #16
+batch_size: 8 #16
 
 save_best:
     metric: abs_rel # ie_acc # abs_rel
@@ -63,8 +63,8 @@ model_conf:
         type : "class_resnet"
         n_blocks : 0
         d_hidden : 64
-        n_classes: 10
-        class_names: ["unlabeled", "road", "sidewalk", "vegetation", "terrain", "sky", "car", "person", "truck", "wall"]
+        n_classes: 8
+        class_names: ["road", "sidewalk", "building", "terrain", "car", "person", "2-wheeler", "truck"]
 
     z_near: 3
     z_far: 80
