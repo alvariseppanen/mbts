@@ -60,7 +60,7 @@ class SemReconstructionLoss:
         self.lambda_fine = config.get("lambda_fine", 1)
 
         self.lambda_sem = config.get("lambda_sem", 1)
-        self.sem_crit = torch.nn.CrossEntropyLoss(weight=torch.tensor([1.0, 1.0, 1.0, 1.0, 10.0, 10.0, 1.0, 5.0]).cuda(), ignore_index=255)
+        self.sem_crit = torch.nn.CrossEntropyLoss(weight=torch.tensor([2.5539, 3.8968, 1.9405, 5.6612, 29.7894, 24.0978, 3.7109, 8.2586]).cuda(), ignore_index=255)
 
         self.use_automasking = use_automasking
 

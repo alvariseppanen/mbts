@@ -16,6 +16,9 @@ checkpoint_every: 500
 #resume_from: "out/kitti_360/kitti_360_backend-None-1_20230904-175237/training_checkpoint_284500.pt" # 23 epoch, only density, no semantics trained 
 #resume_from: "out/kitti_360/kitti_360_backend-None-1_20230908-122535/training_checkpoint_682500.pt" # above but trained semantics for 23 epochs
 
+#resume_from: "out/kitti_360/kitti_360_backend-None-1_20230918-173000/training_checkpoint_102500.pt" 
+resume_from: "out/kitti_360/kitti_360_backend-None-1_20230920-171335/training_checkpoint_155500.pt" 
+
 num_epochs: 70 # 25
 batch_size: 8 #16
 

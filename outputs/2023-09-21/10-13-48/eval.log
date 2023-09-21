@@ -1,0 +1,33 @@
+[2023-09-21 10:14:14,387][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-21 10:16:29,937][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: Caught FileNotFoundError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 792, in __getitem__
+    vox_seg = [self.load_vox_segmentations(sequence, img_ids[0])]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 676, in load_vox_segmentations
+    voxel = np.load(os.path.join(self.data_path, "sscbench/labels", seq, f"{img_id:006d}_1_1.npy")).astype(np.uint8)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/numpy/lib/npyio.py", line 405, in load
+    fid = stack.enter_context(open(os_fspath(file), "rb"))
+FileNotFoundError: [Errno 2] No such file or directory: 'data/KITTI-360/sscbench/labels/2013_05_28_drive_0010_sync/002795_1_1.npy'
+
+[2023-09-21 10:16:29,937][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: Caught FileNotFoundError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 302, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 58, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 792, in __getitem__
+    vox_seg = [self.load_vox_segmentations(sequence, img_ids[0])]
+  File "/home/seppanen/mbts/datasets/kitti_360/kitti_360_dataset.py", line 676, in load_vox_segmentations
+    voxel = np.load(os.path.join(self.data_path, "sscbench/labels", seq, f"{img_id:006d}_1_1.npy")).astype(np.uint8)
+  File "/home/seppanen/miniconda3/envs/bts/lib/python3.10/site-packages/numpy/lib/npyio.py", line 405, in load
+    fid = stack.enter_context(open(os_fspath(file), "rb"))
+FileNotFoundError: [Errno 2] No such file or directory: 'data/KITTI-360/sscbench/labels/2013_05_28_drive_0010_sync/002795_1_1.npy'
+

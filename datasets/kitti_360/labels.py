@@ -214,6 +214,28 @@ labels_3 = [
     Label(  'license plate'        , -1 ,        -1,        -1 , 'vehicle'         , 7       , False        , True         , True         , (  0,  0,142) ),
 ]
 
+sscbench_labels = {
+  0: 0,      # "unlabeled", and others ignored
+  1: 26,     # "car"
+  2: 33,     # "bicycle"
+  3: 32,     # "motorcycle"
+  4: 27,     # "truck"
+  5: 43,     # "other-vehicle"
+  6: 24,     # "person"
+  7: 7,      # "road"
+  8: 9,      # "parking"
+  9: 8,      # "sidewalk"
+  10: 6,     # "other-ground"
+  11: 11,    # "building"
+  12: 13,    # "fence"
+  13: 21,    # "vegetation"
+  14: 22,    # "terrain"
+  15: 17,    # "pole"
+  16: 20,    # "traffic-sign"
+  17: 42,    # "other-structure"
+  18: 44,    # "other-object"
+}
+
 #--------------------------------------------------------------------------------
 # Create dictionaries for a fast lookup
 #--------------------------------------------------------------------------------

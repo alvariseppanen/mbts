@@ -1,0 +1,3 @@
+[2023-09-20 15:53:14,378][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-20 15:53:14,593][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: name 'ax' is not defined
+[2023-09-20 15:53:14,662][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: name 'ax' is not defined

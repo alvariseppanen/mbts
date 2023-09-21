@@ -18,7 +18,7 @@ from datasets.kitti_360.annotation import KITTI360Bbox3D
 from utils.augmentation import get_color_aug_fn
 
 from datasets.kitti_360.helpers import vox2pix
-from datasets.kitti_360.labels import labels, id2label, labels_short, labels_3
+from datasets.kitti_360.labels import labels, id2label, labels_short, labels_3, sscbench_labels
 import copy
 import umsgpack
 
@@ -83,6 +83,7 @@ class Kitti360Dataset(Dataset):
                  return_stereo=False,
                  return_depth=False,
                  return_bev_sem = False,
+                 return_vox_sem = False,
                  return_fisheye=True,
                  return_3d_bboxes=False,
                  return_segmentation=False,
@@ -109,6 +110,7 @@ class Kitti360Dataset(Dataset):
         self.return_fisheye = return_fisheye
         self.return_depth = return_depth
         self.return_bev_sem = return_bev_sem
+        self.return_vox_sem = return_vox_sem
         self.return_3d_bboxes = return_3d_bboxes
         self.return_segmentation = return_segmentation
         self.frame_count = frame_count
@@ -184,6 +186,8 @@ class Kitti360Dataset(Dataset):
         for l in range(1, len(labels_3)):
             self.lut = np.concatenate((self.lut, np.array([labels_3[l].trainId])))
 
+        self.sscbenchlut = np.asarray(list(sscbench_labels.values()))
+
         self.metadata = self._load_metadata(self.data_path)
         self.metadata_cat = {}
         self.metadata_iscrowd = {}
@@ -191,23 +195,6 @@ class Kitti360Dataset(Dataset):
             self.metadata_cat[img_desc["id"]] = img_desc["cat"]
             self.metadata_iscrowd[img_desc["id"]] = img_desc["iscrowd"]
 
-        #print(self.metadata["images"][0]["id"])
-        #print(self.metadata["images"][0]["cat"])
-        #print(self.metadata["images"][0]["iscrowd"])
-        #self._bev_images = [img_desc for img_desc in self.metadata["images"] if img_desc["id"] in lst]
-        #self._bev_images = [img_desc for img_desc in self.metadata["images"]]
-
-        '''for img_desc in self.metadata["images"]:
-            print(img_desc["id"])
-        
-            print(self._bev_images[10]["cat"])
-            print(self._bev_images[10]["iscrowd"])
-            
-            print(self._bev_images[5]["cat"])
-            print(self._bev_images[5]["iscrowd"])
-            print(" ")'''
-
-    
 
     def check_file_integrity(self, seq, id):
         dp = Path(self.data_path)
@@ -517,6 +504,7 @@ class Kitti360Dataset(Dataset):
 
         for id in img_ids:
             if load_left:
+                #print('img', id, seq)
                 img_perspective = cv2.cvtColor(cv2.imread(os.path.join(self.data_path, "data_2d_raw", seq, "image_00", self._perspective_folder, f"{id:010d}.png")), cv2.COLOR_BGR2RGB).astype(np.float32) / 255
                 imgs_p_left += [img_perspective]
 
@@ -675,6 +663,28 @@ class Kitti360Dataset(Dataset):
 
         return np.asarray(sem_out).squeeze()
 
+    def load_vox_segmentations(self, seq, img_id, is_right=False):
+        '''voxel = np.fromfile(os.path.join(self.data_path, "data_2d_raw", seq, "voxels", f"{img_id:010d}.bin"), dtype=np.float32).reshape(256,256,32, 1)
+        label = np.fromfile(os.path.join(self.data_path, "data_2d_raw", seq, "voxels", f"{img_id:010d}.label"), dtype=np.float32).reshape(256,256,32, 1)
+        invalid = np.fromfile(os.path.join(self.data_path, "data_2d_raw", seq, "voxels", f"{img_id:010d}.invalid"), dtype=np.float32).reshape(256,256,32, 1)'''
+        
+        # labels are only for every 5 images
+        #print(img_id, img_id%5)
+        if img_id % 5 == 0:
+            #print('vox', img_id, seq)
+            #print("loading vox label: ", img_id)
+            voxel = np.load(os.path.join(self.data_path, "sscbench/labels", seq, f"{img_id:006d}_1_1.npy")).astype(np.uint8)
+            voxel[voxel == 255] = 0
+            voxel = self.sscbenchlut[voxel] # from sscbench labels to kitti360 id
+            voxel = self.lut[voxel] # from kitti360 id to train id
+        else:
+            voxel = np.ones((256,256,32))*255
+            #print("no label")
+
+        #T_velo_to_cam = self._calibs["T_velo_to_cam"]["00" if not is_right else "01"]
+
+        return voxel
+
     def load_depth(self, seq, img_id, is_right):
         points = np.fromfile(os.path.join(self.data_path, "data_3d_raw", seq, "velodyne_points", "data", f"{img_id:010d}.bin"), dtype=np.float32).reshape(-1, 4)
         points[:, 3] = 1.0
@@ -778,6 +788,11 @@ class Kitti360Dataset(Dataset):
         else:
             bev_seg = []
 
+        if self.return_vox_sem:
+            vox_seg = [self.load_vox_segmentations(sequence, img_ids[0])]
+        else:
+            vox_seg = []
+
         if self.return_depth:
             depths = [self.load_depth(sequence, img_ids[0], is_right)]
         else:
@@ -799,6 +814,7 @@ class Kitti360Dataset(Dataset):
             "poses": poses,
             "depths": depths,
             "bev": bev_seg,
+            "vox": vox_seg,
             "ts": ids,
             "3d_bboxes": bboxes_3d,
             "segs": segs,

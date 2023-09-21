@@ -2,6 +2,7 @@ import math
 import os
 
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 import numpy as np
 import torch
 from ignite.contrib.handlers import TensorboardLogger
@@ -287,7 +288,7 @@ class BTSWrapper(nn.Module):
 
         #print(pred_bev.shape)
         #print(set(pred_bev.cpu().numpy().reshape(-1)))
-        '''if torch.count_nonzero(gt_bev == 4) > 0:
+        if torch.count_nonzero(gt_bev == 4) > 0:
             v_pred_bev = new_pred_bev.clone()
             v_gt_bev = gt_bev.clone()
             v_pred_bev[v_pred_bev == 255] = -1
@@ -315,7 +316,7 @@ class BTSWrapper(nn.Module):
             plt.imshow(gt_profile)
             plt.show()
             plt.imshow(pred_profile)
-            plt.show()'''
+            plt.show()
         #cv2.imwrite("/home/seppanen/test/" + f"{index:010d}_pred.png", cv2.cvtColor((pred_profile * 1).clip(max=255).astype(np.uint8), cv2.COLOR_RGB2BGR))
         #cv2.imwrite("/home/seppanen/test/" + f"{index:010d}_gt.png", cv2.cvtColor((gt_profile * 1).clip(max=255).astype(np.uint8), cv2.COLOR_RGB2BGR))
 

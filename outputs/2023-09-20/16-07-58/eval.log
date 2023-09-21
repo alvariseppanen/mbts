@@ -1,0 +1,2 @@
+[2023-09-20 16:08:19,313][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-20 16:08:51,929][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: 

@@ -1,0 +1,3 @@
+[2023-09-20 16:31:46,802][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-20 16:32:55,661][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: ~ (operator.invert) is only implemented on integer and Boolean-type tensors
+[2023-09-20 16:32:55,777][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: ~ (operator.invert) is only implemented on integer and Boolean-type tensors

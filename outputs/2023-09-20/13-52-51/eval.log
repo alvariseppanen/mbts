@@ -1,0 +1,3 @@
+[2023-09-20 13:53:16,894][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-20 13:53:17,324][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: stack expects a non-empty TensorList
+[2023-09-20 13:53:17,404][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: stack expects a non-empty TensorList

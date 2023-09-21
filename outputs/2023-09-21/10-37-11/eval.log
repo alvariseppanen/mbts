@@ -1,0 +1,3 @@
+[2023-09-21 10:37:36,672][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-21 10:39:29,759][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: DataLoader worker (pid(s) 18775) exited unexpectedly
+[2023-09-21 10:39:29,760][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: DataLoader worker (pid(s) 18775) exited unexpectedly

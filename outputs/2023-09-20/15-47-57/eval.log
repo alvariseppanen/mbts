@@ -1,0 +1,3 @@
+[2023-09-20 15:48:19,458][ignite.engine.engine.Engine][INFO] - Engine run starting with max_epochs=1.
+[2023-09-20 15:48:19,644][ignite.engine.engine.Engine][ERROR] - Current run is terminating due to exception: "avg_pool3d_out_cuda" not implemented for 'Bool'
+[2023-09-20 15:48:19,691][ignite.engine.engine.Engine][ERROR] - Engine run is terminating due to exception: "avg_pool3d_out_cuda" not implemented for 'Bool'
